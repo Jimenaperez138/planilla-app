@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Planilla GTQ</title>
+    <!-- Librería para generación de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -21,6 +23,8 @@
         .btn-main:hover { background: #15803d; }
         .btn-sec { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-sec:hover { background: #b91c1c; }
+        .btn-pdf { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+        .btn-pdf:hover { background: #1d4ed8; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
         th { background: #f1f5f9; color: #334155; }
@@ -207,29 +211,36 @@
     <!-- MÓDULO 4 -->
     <div id="mod4" class="section">
         <h2>4. Cierre y Resumen General</h2>
-        <div class="resumen-card">
-            <h3>Totales de la Planilla Activa</h3>
-            <p><strong>Total Empleados:</strong> <span id="totEmpleados">0</span></p>
-            <p><strong>Monto Total a Desembolsar:</strong> Q <span id="totPlanilla">0.00</span></p>
+        
+        <button class="btn-pdf" onclick="generarPDF()">📄 Descargar Reporte PDF</button>
+
+        <!-- Área que se convertirá a PDF -->
+        <div id="areaImpresionPdf">
+            <div class="resumen-card">
+                <h3>Totales de la Planilla Activa</h3>
+                <p><strong>Período:</strong> <span id="pdfRangoPeriodo">-</span></p>
+                <p><strong>Total Empleados:</strong> <span id="totEmpleados">0</span></p>
+                <p><strong>Monto Total a Desembolsar:</strong> Q <span id="totPlanilla">0.00</span></p>
+            </div>
+            <h3>Detalle General de Pagos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Puesto</th>
+                        <th>Forma Pago</th>
+                        <th>Neto a Recibir</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCierre"></tbody>
+            </table>
         </div>
-        <h3>Detalle General de Pagos</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Empleado</th>
-                    <th>Puesto</th>
-                    <th>Forma Pago</th>
-                    <th>Neto a Recibir</th>
-                </tr>
-            </thead>
-            <tbody id="tbodyCierre"></tbody>
-        </table>
     </div>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyLdK3PDDWck06e8DCVvTI-eqKJ7daRG0x6Peaze4_rVzCL_l2G-We0GNm45kQEMNeZ9A/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbyCbnnzSanN4GJRpv8YrvYlZoSsioLQAzXsbFV12ntZc7rfspVsdf2znA29kFJ66HnvKw/exec";
 
     let diasPeriodo = 14;
     let empleados = [];
@@ -392,6 +403,7 @@
             const opciones = { day: '2-digit', month: 'short', year: 'numeric' };
             const txtRango = `${fInicio.toLocaleDateString('es-GT', opciones)} al ${fFin.toLocaleDateString('es-GT', opciones)}`;
             if (document.getElementById('lblRangoPeriodo')) document.getElementById('lblRangoPeriodo').innerText = txtRango;
+            if (document.getElementById('pdfRangoPeriodo')) document.getElementById('pdfRangoPeriodo').innerText = txtRango;
         }
 
         if (document.getElementById('mod3').classList.contains('active')) {
@@ -618,6 +630,22 @@
 
         document.getElementById('totEmpleados').innerText = empleadosValidos.length;
         document.getElementById('totPlanilla').innerText = formatearQ(totalPlanilla);
+    }
+
+    // GENERACIÓN DE PDF
+    function generarPDF() {
+        evaluarCierre(); // Asegura actualización previa al reporte
+
+        const elemento = document.getElementById('areaImpresionPdf');
+        const opciones = {
+            margin:       10,
+            filename:     'Resumen_Planilla_Guatemala.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opciones).from(elemento).save();
     }
 </script>
 
