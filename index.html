@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Planilla GTQ</title>
-    <!-- Librería para generación de PDF -->
+    <!-- Librería HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
@@ -29,7 +29,7 @@
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
         th { background: #f1f5f9; color: #334155; }
         .resumen-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .loading-badge { background: #fef08a; color: #854d0e; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
+        .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -100,7 +100,7 @@
                 <input type="text" id="empPuesto" placeholder="Auxiliar">
             </div>
             <div class="form-group">
-                <label>Salario Catorcenal Directo (GTQ):*</label>
+                <label>Salario Base (GTQ):*</label>
                 <input type="number" id="empSalario" step="0.01" placeholder="1950.00">
             </div>
             <div class="form-group">
@@ -118,15 +118,11 @@
                     <option value="BANRURAL">BANRURAL</option>
                     <option value="BANCO INDUSTRIAL">BANCO INDUSTRIAL (BI)</option>
                     <option value="G&T CONTINENTAL">G&T CONTINENTAL</option>
-                    <option value="BAM">BAM (Banco Agromercantil)</option>
+                    <option value="BAM">BAM</option>
                     <option value="BAC CREDOMATIC">BAC CREDOMATIC</option>
                     <option value="BANCO PROMERICA">BANCO PROMERICA</option>
                     <option value="INTERBANCO">INTERBANCO</option>
-                    <option value="CHN">CHN (Crédito Hipotecario Nacional)</option>
-                    <option value="BANCO DE ANTIGUA">BANCO DE ANTIGUA</option>
-                    <option value="BANCO INMOBILIARIO">BANCO INMOBILIARIO</option>
-                    <option value="BANCO FICOHSA">BANCO FICOHSA</option>
-                    <option value="VIVIBANCO">VIVIBANCO</option>
+                    <option value="CHN">CHN</option>
                     <option value="OTRO / N/A">OTRO / N/A</option>
                 </select>
             </div>
@@ -214,7 +210,6 @@
         
         <button class="btn-pdf" onclick="generarPDF()">📄 Descargar Reporte PDF</button>
 
-        <!-- Área que se convertirá a PDF -->
         <div id="areaImpresionPdf">
             <div class="resumen-card">
                 <h3>Totales de la Planilla Activa</h3>
@@ -240,21 +235,17 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyCbnnzSanN4GJRpv8YrvYlZoSsioLQAzXsbFV12ntZc7rfspVsdf2znA29kFJ66HnvKw/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbzbKZbb8hENal0cyniMNjch7CtsXqoQHDlUb0bxV8Jcjz2LgrdS9Vkjk0baIP8e8uE4RA/exec";
 
     let diasPeriodo = 14;
     let empleados = [];
 
-    // Limpieza de montos y formatos numéricos
     function parseMontoSeguro(val) {
         if (!val) return 0;
         if (typeof val === 'number') return val;
         let str = val.toString().trim().replace(/[^0-9.,]/g, '');
-        if (str.includes('.') && str.includes(',')) {
-            str = str.replace(/\./g, '').replace(',', '.');
-        } else if (str.includes(',')) {
-            str = str.replace(',', '.');
-        }
+        if (str.includes('.') && str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
+        else if (str.includes(',')) str = str.replace(',', '.');
         let num = parseFloat(str);
         return isNaN(num) ? 0 : num;
     }
@@ -273,7 +264,6 @@
         cargarEmpleadosDesdeSheets();
     };
 
-    // Sincronización JSONP (evita bloqueos de CORS)
     function cargarEmpleadosDesdeSheets() {
         const status = document.getElementById('statusCarga');
         if (status) {
@@ -307,10 +297,10 @@
                         dpi: getVal(['dpi']),
                         nit: getVal(['nit']) || 'C/F',
                         puesto: getVal(['puesto']),
-                        salario: parseMontoSeguro(getVal(['salario', 'salario base', 'salario base mensual (gtq)*', 'salario catorcenal directo (gtq)*'])),
+                        salario: parseMontoSeguro(getVal(['salario', 'salario base'])),
                         formaPago: getVal(['formapago', 'forma de pago']) || 'TRANSFERENCIA',
                         banco: getVal(['banco']),
-                        cuenta: getVal(['cuenta', 'no. cuenta', 'número de cuenta']),
+                        cuenta: getVal(['cuenta', 'no. cuenta']),
                         llegada: getVal(['llegada']) || "TIEMPO",
                         permiso: getVal(['permiso']) || "NO",
                         horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])),
@@ -320,9 +310,6 @@
                 });
 
                 renderTablaEmpleados();
-                if (document.getElementById('mod3').classList.contains('active')) calcularNominaActual();
-                if (document.getElementById('mod4').classList.contains('active')) evaluarCierre();
-
                 if (status) {
                     status.innerText = "✅ Sincronizado con Google Sheets";
                     status.style.background = "#dcfce7";
@@ -332,7 +319,7 @@
                 empleados = [];
                 renderTablaEmpleados();
                 if (status) {
-                    status.innerText = "ℹ️ Conectado. No hay empleados guardados aún en Google Sheets.";
+                    status.innerText = "ℹ️ Conectado. No hay empleados registrados en Google Sheets.";
                     status.style.background = "#eff6ff";
                     status.style.color = "#1e40af";
                 }
@@ -341,7 +328,7 @@
 
         script.onerror = function() {
             if (status) {
-                status.innerText = "⚠️ Error al conectar con Google Sheets. Verifique la URL_API.";
+                status.innerText = "⚠️ Error de conexión con Google Sheets. Verifica tu URL_API.";
                 status.style.background = "#fee2e2";
                 status.style.color = "#991b1b";
             }
@@ -351,40 +338,23 @@
         document.body.appendChild(script);
     }
 
-    function enviarPeticionAppsScript(payload) {
-        if (!URL_API) return;
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = URL_API;
-        form.target = 'hidden_iframe';
-
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'postData';
-        input.value = JSON.stringify(payload);
-        form.appendChild(input);
-
-        let iframe = document.getElementById('hidden_iframe');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.id = 'hidden_iframe';
-            iframe.name = 'hidden_iframe';
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
+    // ENVÍO DIRECTO FORM-URLENCODED (SIN CORS / PASO DIRECTO)
+    function enviarDatosAGoogle(params) {
+        const formData = new URLSearchParams();
+        for (let key in params) {
+            formData.append(key, params[key]);
         }
 
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-    }
-
-    function guardarEmpleadoEnBaseDatos(nuevoEmp) {
-        enviarPeticionAppsScript({ action: "guardarEmpleado", empleado: nuevoEmp });
-    }
-
-    function eliminarEmpleadoDeBaseDatos(id) {
-        enviarPeticionAppsScript({ action: "eliminarEmpleado", id: id });
+        fetch(URL_API, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        }).then(() => {
+            console.log("Datos sincronizados con Google Sheets.");
+        }).catch(err => {
+            console.error("Error enviando datos:", err);
+        });
     }
 
     function actualizarFechasYPeriodo() {
@@ -404,10 +374,6 @@
             const txtRango = `${fInicio.toLocaleDateString('es-GT', opciones)} al ${fFin.toLocaleDateString('es-GT', opciones)}`;
             if (document.getElementById('lblRangoPeriodo')) document.getElementById('lblRangoPeriodo').innerText = txtRango;
             if (document.getElementById('pdfRangoPeriodo')) document.getElementById('pdfRangoPeriodo').innerText = txtRango;
-        }
-
-        if (document.getElementById('mod3').classList.contains('active')) {
-            calcularNominaActual();
         }
     }
 
@@ -435,13 +401,17 @@
             llegada: "TIEMPO",
             permiso: "NO",
             horasExtras: 0,
-            prestamo: 0,
-            neto: 0
+            prestamo: 0
         };
 
         empleados.push(nuevoEmp);
         renderTablaEmpleados();
-        guardarEmpleadoEnBaseDatos(nuevoEmp);
+
+        // Envío directo a Google Sheets
+        enviarDatosAGoogle({
+            action: "guardarEmpleado",
+            ...nuevoEmp
+        });
 
         document.getElementById('empNombre').value = '';
         document.getElementById('empTel').value = '';
@@ -453,18 +423,18 @@
         document.getElementById('empBanco').value = '';
         document.getElementById('empNumCuenta').value = '';
 
-        alert(`✅ Empleado "${nombre}" registrado exitosamente.`);
+        alert(`✅ Empleado "${nombre}" registrado y enviado a Google Sheets.`);
     }
 
     function eliminarEmpleado(id) {
         const emp = empleados.find(e => e.id === id);
-        const nombreEmp = emp ? emp.nombre : 'este empleado';
+        if (!emp) return;
 
-        if (confirm(`¿Está seguro de eliminar definitivamente a "${nombreEmp}" de Google Sheets?`)) {
+        if (confirm(`¿Eliminar a "${emp.nombre}" de la hoja de cálculo?`)) {
             empleados = empleados.filter(e => e.id !== id);
             renderTablaEmpleados();
-            eliminarEmpleadoDeBaseDatos(id);
-            alert(`🗑️ "${nombreEmp}" ha sido eliminado.`);
+            enviarDatosAGoogle({ action: "eliminarEmpleado", id: id });
+            alert(`🗑️ Empleado eliminado.`);
         }
     }
 
@@ -489,9 +459,7 @@
                 <td>${e.formaPago}</td>
                 <td>${e.banco || '-'}</td>
                 <td>${e.cuenta || '-'}</td>
-                <td>
-                    <button class="btn-sec" onclick="eliminarEmpleado(${e.id})">Eliminar</button>
-                </td>
+                <td><button class="btn-sec" onclick="eliminarEmpleado(${e.id})">Eliminar</button></td>
             `;
             tbody.appendChild(tr);
 
@@ -504,11 +472,8 @@
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-        const targetSection = document.getElementById(tabId);
-        const targetBtn = document.getElementById('btn-' + tabId);
-
-        if (targetSection) targetSection.classList.add('active');
-        if (targetBtn) targetBtn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
 
         if (tabId === 'mod2') cargarEmpleadoAsistencia();
         if (tabId === 'mod3') cargarEmpleadoNomina();
@@ -518,8 +483,7 @@
     function cargarEmpleadoAsistencia() {
         const select = document.getElementById('selectEmpAsistencia');
         if (!select || !select.value) return;
-        const id = parseInt(select.value);
-        const emp = empleados.find(e => e.id === id);
+        const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
         document.getElementById('evalLlegada').value = emp.llegada || "TIEMPO";
@@ -529,10 +493,8 @@
 
     function guardarAsistencia() {
         const select = document.getElementById('selectEmpAsistencia');
-        if (!select || !select.value) {
-            alert("Por favor seleccione un empleado.");
-            return;
-        }
+        if (!select || !select.value) return alert("Seleccione un empleado.");
+
         const id = parseInt(select.value);
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
@@ -541,46 +503,39 @@
         emp.permiso = document.getElementById('evalPermiso').value;
         emp.horasExtras = parseMontoSeguro(document.getElementById('cantHorasExtras').value);
 
-        enviarPeticionAppsScript({
+        enviarDatosAGoogle({
             action: "guardarAsistencia",
-            asistencia: {
-                id: emp.id,
-                llegada: emp.llegada,
-                permiso: emp.permiso,
-                horasExtras: emp.horasExtras
-            }
+            id: id,
+            llegada: emp.llegada,
+            permiso: emp.permiso,
+            horasExtras: emp.horasExtras
         });
 
-        alert(`✅ Asistencia guardada correctamente en Google Sheets para ${emp.nombre}`);
+        alert(`✅ Asistencia actualizada para ${emp.nombre}`);
     }
 
     function cargarEmpleadoNomina() {
         const select = document.getElementById('selectEmpNomina');
         if (!select || !select.value) return;
-        const id = parseInt(select.value);
-        const emp = empleados.find(e => e.id === id);
+        const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
         document.getElementById('inputPrestamo').value = emp.prestamo || 0;
         calcularNominaActual();
     }
 
-    // CÁLCULO CATORCENAL DIRECTO
     function calcularNominaActual() {
         const select = document.getElementById('selectEmpNomina');
         if (!select || !select.value) return;
-        const id = parseInt(select.value);
-        const emp = empleados.find(e => e.id === id);
+        const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
         const basePeriodo = parseMontoSeguro(emp.salario);
-
         const salarioDiario = basePeriodo / 14;
         const valorHora = (salarioDiario / 8) * 1.5;
         const pagoExtras = (emp.horasExtras || 0) * valorHora;
-        
         const neto = basePeriodo + pagoExtras - emp.prestamo;
 
         emp.neto = neto > 0 ? neto : 0;
@@ -591,7 +546,6 @@
         document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
     }
 
-    // CIERRE Y DETALLE GENERAL
     function evaluarCierre() {
         const tbody = document.getElementById('tbodyCierre');
         if (!tbody) return;
@@ -599,19 +553,11 @@
 
         let totalPlanilla = 0;
 
-        const empleadosValidos = empleados.filter(e => 
-            e.nombre && 
-            e.nombre.toString().trim() !== '' && 
-            e.nombre.toString().toLowerCase() !== 'nombre'
-        );
-
-        empleadosValidos.forEach(e => {
+        empleados.forEach(e => {
             const basePeriodo = parseMontoSeguro(e.salario);
-
             const salarioDiario = basePeriodo / 14;
             const valorHora = (salarioDiario / 8) * 1.5;
             const pagoExtras = (e.horasExtras || 0) * valorHora;
-            
             const neto = basePeriodo + pagoExtras - (e.prestamo || 0);
             e.neto = neto > 0 ? neto : 0;
 
@@ -628,21 +574,19 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('totEmpleados').innerText = empleadosValidos.length;
+        document.getElementById('totEmpleados').innerText = empleados.length;
         document.getElementById('totPlanilla').innerText = formatearQ(totalPlanilla);
     }
 
-    // GENERACIÓN DE PDF
     function generarPDF() {
-        evaluarCierre(); // Asegura actualización previa al reporte
-
+        evaluarCierre();
         const elemento = document.getElementById('areaImpresionPdf');
         const opciones = {
-            margin:       10,
-            filename:     'Resumen_Planilla_Guatemala.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            margin: 10,
+            filename: 'Resumen_Planilla_Guatemala.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
         html2pdf().set(opciones).from(elemento).save();
