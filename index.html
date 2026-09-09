@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Planilla GTQ</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 15px; border: none; background: #e2e8f0; cursor: pointer; border-radius: 5px; font-weight: bold; color: #475569; }
+        .tab-btn.active { background: #2563eb; color: white; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        .form-group input, .form-group select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
+        .btn-main { background: #16a34a; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-main:hover { background: #15803d; }
+        .btn-sec { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-sec:hover { background: #b91c1c; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; color: #334155; }
+        .resumen-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .loading-badge { background: #fef08a; color: #854d0e; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sistema de Planilla - Guatemala</h1>
+    <div id="statusCarga" class="loading-badge">⏳ Sincronizando con Google Sheets...</div>
+
+    <!-- Configuración del Período -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Tipo de Período:</label>
+            <select id="selectPeriodoPago" onchange="actualizarFechasYPeriodo()">
+                <option value="14" selected>Catorcenal</option>
+                <option value="15">Quincenal</option>
+                <option value="30">Mensual</option>
+                <option value="7">Semanal</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Fecha de Inicio:</label>
+            <input type="date" id="fechaInicioPeriodo" onchange="actualizarFechasYPeriodo()">
+        </div>
+        <div class="form-group">
+            <label>Fecha Fin Estimada:</label>
+            <input type="date" id="fechaFinPeriodo" readonly>
+        </div>
+        <div class="form-group">
+            <label>Período Activo:</label>
+            <div style="padding-top:8px; font-weight:bold; color:#2563eb;" id="lblRangoPeriodo">-</div>
+        </div>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="btn-mod1" onclick="switchTab('mod1')">1. Registro Empleados</button>
+        <button class="tab-btn" id="btn-mod2" onclick="switchTab('mod2')">2. Asistencia e Incidencias</button>
+        <button class="tab-btn" id="btn-mod3" onclick="switchTab('mod3')">3. Cálculo de Nómina</button>
+        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Cierre y Resumen</button>
+    </div>
+
+    <!-- MÓDULO 1 -->
+    <div id="mod1" class="section active">
+        <h2>1. Registro de Empleados</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nombre Completo:*</label>
+                <input type="text" id="empNombre" placeholder="Nombre Apellido">
+            </div>
+            <div class="form-group">
+                <label>Teléfono:</label>
+                <input type="text" id="empTel" placeholder="55550000">
+            </div>
+            <div class="form-group">
+                <label>Correo Electrónico:</label>
+                <input type="email" id="empCorreo" placeholder="correo@empresa.com">
+            </div>
+            <div class="form-group">
+                <label>DPI:</label>
+                <input type="text" id="empDpi" placeholder="2551 17868 0505">
+            </div>
+            <div class="form-group">
+                <label>NIT:</label>
+                <input type="text" id="empNit" placeholder="C/F">
+            </div>
+            <div class="form-group">
+                <label>Puesto:</label>
+                <input type="text" id="empPuesto" placeholder="Auxiliar">
+            </div>
+            <div class="form-group">
+                <label>Salario Catorcenal Directo (GTQ):*</label>
+                <input type="number" id="empSalario" step="0.01" placeholder="1950.00">
+            </div>
+            <div class="form-group">
+                <label>Forma de Pago:</label>
+                <select id="empFormaPago">
+                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                    <option value="CHEQUE">CHEQUE</option>
+                    <option value="EFECTIVO">EFECTIVO</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Banco:</label>
+                <select id="empBanco">
+                    <option value="">-- Seleccione Banco --</option>
+                    <option value="BANRURAL">BANRURAL</option>
+                    <option value="BANCO INDUSTRIAL">BANCO INDUSTRIAL (BI)</option>
+                    <option value="G&T CONTINENTAL">G&T CONTINENTAL</option>
+                    <option value="BAM">BAM (Banco Agromercantil)</option>
+                    <option value="BAC CREDOMATIC">BAC CREDOMATIC</option>
+                    <option value="BANCO PROMERICA">BANCO PROMERICA</option>
+                    <option value="INTERBANCO">INTERBANCO</option>
+                    <option value="CHN">CHN (Crédito Hipotecario Nacional)</option>
+                    <option value="BANCO DE ANTIGUA">BANCO DE ANTIGUA</option>
+                    <option value="BANCO INMOBILIARIO">BANCO INMOBILIARIO</option>
+                    <option value="BANCO FICOHSA">BANCO FICOHSA</option>
+                    <option value="VIVIBANCO">VIVIBANCO</option>
+                    <option value="OTRO / N/A">OTRO / N/A</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>No. Cuenta:</label>
+                <input type="text" id="empNumCuenta" placeholder="12345678">
+            </div>
+        </div>
+        <button class="btn-main" onclick="agregarEmpleado()">+ Agregar Empleado</button>
+
+        <h3>Lista de Empleados Registrados</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Puesto</th>
+                    <th>Salario</th>
+                    <th>Pago</th>
+                    <th>Banco</th>
+                    <th>Cuenta</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyEmpleados"></tbody>
+        </table>
+    </div>
+
+    <!-- MÓDULO 2 -->
+    <div id="mod2" class="section">
+        <h2>2. Asistencia e Incidencias</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Seleccionar Empleado:</label>
+                <select id="selectEmpAsistencia" onchange="cargarEmpleadoAsistencia()"></select>
+            </div>
+            <div class="form-group">
+                <label>Llegada:</label>
+                <select id="evalLlegada">
+                    <option value="TIEMPO">A TIEMPO</option>
+                    <option value="TARDE">TARDE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Permiso:</label>
+                <select id="evalPermiso">
+                    <option value="NO">NO</option>
+                    <option value="SI">SI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Horas Extras:</label>
+                <input type="number" id="cantHorasExtras" value="0" step="0.5">
+            </div>
+        </div>
+        <button class="btn-main" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+    </div>
+
+    <!-- MÓDULO 3 -->
+    <div id="mod3" class="section">
+        <h2>3. Cálculo de Nómina</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Seleccionar Empleado:</label>
+                <select id="selectEmpNomina" onchange="cargarEmpleadoNomina()"></select>
+            </div>
+            <div class="form-group">
+                <label>Préstamos / Descuentos (GTQ):</label>
+                <input type="number" id="inputPrestamo" value="0" step="0.01" oninput="calcularNominaActual()">
+            </div>
+        </div>
+        <div class="resumen-card">
+            <h3>Desglose del Pago</h3>
+            <p><strong>Salario Base Período:</strong> Q <span id="lblBasePeriodo">0.00</span></p>
+            <p><strong>Pago Horas Extras:</strong> Q <span id="lblPagoExtras">0.00</span></p>
+            <p><strong>Descuento Préstamo:</strong> Q <span id="lblDescuentoPrestamo">0.00</span></p>
+            <hr>
+            <p style="font-size: 1.2rem; color: #16a34a;"><strong>Monto Neto a Pagar:</strong> Q <span id="lblNetoPagar">0.00</span></p>
+        </div>
+    </div>
+
+    <!-- MÓDULO 4 -->
+    <div id="mod4" class="section">
+        <h2>4. Cierre y Resumen General</h2>
+        <div class="resumen-card">
+            <h3>Totales de la Planilla Activa</h3>
+            <p><strong>Total Empleados:</strong> <span id="totEmpleados">0</span></p>
+            <p><strong>Monto Total a Desembolsar:</strong> Q <span id="totPlanilla">0.00</span></p>
+        </div>
+        <h3>Detalle General de Pagos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Empleado</th>
+                    <th>Puesto</th>
+                    <th>Forma Pago</th>
+                    <th>Neto a Recibir</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyCierre"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const URL_API = "https://script.google.com/macros/s/AKfycbwo5HZtH3CVhPV-Ho4SIjHpwEA28QNDw3-LoNVPrea1DmJfmX3TwFNnu2ClKgXk19qBlA/exec";
+
+    let diasPeriodo = 14;
+    let empleados = [];
+
+    // Limpieza de montos y formatos numéricos
+    function parseMontoSeguro(val) {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        let str = val.toString().trim().replace(/[^0-9.,]/g, '');
+        if (str.includes('.') && str.includes(',')) {
+            str = str.replace(/\./g, '').replace(',', '.');
+        } else if (str.includes(',')) {
+            str = str.replace(',', '.');
+        }
+        let num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
+    }
+
+    function formatearQ(monto) {
+        return (parseFloat(monto) || 0).toLocaleString('es-GT', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    window.onload = function() {
+        const hoy = new Date().toISOString().split('T')[0];
+        if (document.getElementById('fechaInicioPeriodo')) document.getElementById('fechaInicioPeriodo').value = hoy;
+        actualizarFechasYPeriodo();
+        cargarEmpleadosDesdeSheets();
+    };
+
+    // Sincronización JSONP (evita bloqueos de CORS)
+    function cargarEmpleadosDesdeSheets() {
+        const status = document.getElementById('statusCarga');
+        if (status) {
+            status.innerText = "⏳ Sincronizando con Google Sheets...";
+            status.style.background = "#fef08a";
+            status.style.color = "#854d0e";
+        }
+
+        const script = document.createElement('script');
+
+        window.procesarRespuestaGoogle = function(data) {
+            document.body.removeChild(script);
+            delete window.procesarRespuestaGoogle;
+
+            if (Array.isArray(data) && data.length > 0) {
+                empleados = data.map(item => {
+                    const getVal = (keys) => {
+                        for (let k of keys) {
+                            for (let p in item) {
+                                if (p.toLowerCase().trim() === k.toLowerCase().trim()) return item[p];
+                            }
+                        }
+                        return '';
+                    };
+
+                    return {
+                        id: parseInt(getVal(['id'])) || 1,
+                        nombre: getVal(['nombre', 'nombre completo']),
+                        tel: getVal(['tel', 'teléfono', 'telefono']),
+                        correo: getVal(['correo', 'correo electrónico']),
+                        dpi: getVal(['dpi']),
+                        nit: getVal(['nit']) || 'C/F',
+                        puesto: getVal(['puesto']),
+                        salario: parseMontoSeguro(getVal(['salario', 'salario base', 'salario base mensual (gtq)*', 'salario catorcenal directo (gtq)*'])),
+                        formaPago: getVal(['formapago', 'forma de pago']) || 'TRANSFERENCIA',
+                        banco: getVal(['banco']),
+                        cuenta: getVal(['cuenta', 'no. cuenta', 'número de cuenta']),
+                        llegada: getVal(['llegada']) || "TIEMPO",
+                        permiso: getVal(['permiso']) || "NO",
+                        horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])),
+                        prestamo: parseMontoSeguro(getVal(['prestamo', 'préstamo'])),
+                        neto: 0
+                    };
+                });
+
+                renderTablaEmpleados();
+                if (document.getElementById('mod3').classList.contains('active')) calcularNominaActual();
+                if (document.getElementById('mod4').classList.contains('active')) evaluarCierre();
+
+                if (status) {
+                    status.innerText = "✅ Sincronizado con Google Sheets";
+                    status.style.background = "#dcfce7";
+                    status.style.color = "#15803d";
+                }
+            } else {
+                empleados = [];
+                renderTablaEmpleados();
+                if (status) {
+                    status.innerText = "ℹ️ Conectado. No hay empleados guardados aún en Google Sheets.";
+                    status.style.background = "#eff6ff";
+                    status.style.color = "#1e40af";
+                }
+            }
+        };
+
+        script.onerror = function() {
+            if (status) {
+                status.innerText = "⚠️ Error al conectar con Google Sheets. Verifique la URL_API.";
+                status.style.background = "#fee2e2";
+                status.style.color = "#991b1b";
+            }
+        };
+
+        script.src = URL_API + (URL_API.includes('?') ? '&' : '?') + 'prefix=procesarRespuestaGoogle';
+        document.body.appendChild(script);
+    }
+
+    function enviarPeticionAppsScript(payload) {
+        if (!URL_API) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = URL_API;
+        form.target = 'hidden_iframe';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'postData';
+        input.value = JSON.stringify(payload);
+        form.appendChild(input);
+
+        let iframe = document.getElementById('hidden_iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'hidden_iframe';
+            iframe.name = 'hidden_iframe';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+
+    function guardarEmpleadoEnBaseDatos(nuevoEmp) {
+        enviarPeticionAppsScript({ action: "guardarEmpleado", empleado: nuevoEmp });
+    }
+
+    function eliminarEmpleadoDeBaseDatos(id) {
+        enviarPeticionAppsScript({ action: "eliminarEmpleado", id: id });
+    }
+
+    function actualizarFechasYPeriodo() {
+        const select = document.getElementById('selectPeriodoPago');
+        if (select) diasPeriodo = parseInt(select.value) || 14;
+
+        const fechaInicioInput = document.getElementById('fechaInicioPeriodo');
+        if (fechaInicioInput && fechaInicioInput.value) {
+            const fInicio = new Date(fechaInicioInput.value + 'T00:00:00');
+            const fFin = new Date(fInicio);
+            fFin.setDate(fFin.getDate() + (diasPeriodo - 1));
+
+            const fFinStr = fFin.toISOString().split('T')[0];
+            if (document.getElementById('fechaFinPeriodo')) document.getElementById('fechaFinPeriodo').value = fFinStr;
+
+            const opciones = { day: '2-digit', month: 'short', year: 'numeric' };
+            const txtRango = `${fInicio.toLocaleDateString('es-GT', opciones)} al ${fFin.toLocaleDateString('es-GT', opciones)}`;
+            if (document.getElementById('lblRangoPeriodo')) document.getElementById('lblRangoPeriodo').innerText = txtRango;
+        }
+
+        if (document.getElementById('mod3').classList.contains('active')) {
+            calcularNominaActual();
+        }
+    }
+
+    function agregarEmpleado() {
+        const nombre = document.getElementById('empNombre').value.trim();
+        const salario = parseMontoSeguro(document.getElementById('empSalario').value);
+
+        if (!nombre || salario <= 0) {
+            alert("Por favor ingrese al menos un Nombre y Salario válidos.");
+            return;
+        }
+
+        const nuevoEmp = {
+            id: empleados.length ? Math.max(...empleados.map(e => e.id)) + 1 : 1,
+            nombre: nombre,
+            tel: document.getElementById('empTel').value.trim(),
+            correo: document.getElementById('empCorreo').value.trim() || 'No registrado',
+            dpi: document.getElementById('empDpi').value.trim(),
+            nit: document.getElementById('empNit').value.trim() || 'C/F',
+            puesto: document.getElementById('empPuesto').value.trim(),
+            salario: salario,
+            formaPago: document.getElementById('empFormaPago').value,
+            banco: document.getElementById('empBanco').value,
+            cuenta: document.getElementById('empNumCuenta').value.trim(),
+            llegada: "TIEMPO",
+            permiso: "NO",
+            horasExtras: 0,
+            prestamo: 0,
+            neto: 0
+        };
+
+        empleados.push(nuevoEmp);
+        renderTablaEmpleados();
+        guardarEmpleadoEnBaseDatos(nuevoEmp);
+
+        document.getElementById('empNombre').value = '';
+        document.getElementById('empTel').value = '';
+        document.getElementById('empCorreo').value = '';
+        document.getElementById('empDpi').value = '';
+        document.getElementById('empNit').value = '';
+        document.getElementById('empPuesto').value = '';
+        document.getElementById('empSalario').value = '';
+        document.getElementById('empBanco').value = '';
+        document.getElementById('empNumCuenta').value = '';
+
+        alert(`✅ Empleado "${nombre}" registrado exitosamente.`);
+    }
+
+    function eliminarEmpleado(id) {
+        const emp = empleados.find(e => e.id === id);
+        const nombreEmp = emp ? emp.nombre : 'este empleado';
+
+        if (confirm(`¿Está seguro de eliminar definitivamente a "${nombreEmp}" de Google Sheets?`)) {
+            empleados = empleados.filter(e => e.id !== id);
+            renderTablaEmpleados();
+            eliminarEmpleadoDeBaseDatos(id);
+            alert(`🗑️ "${nombreEmp}" ha sido eliminado.`);
+        }
+    }
+
+    function renderTablaEmpleados() {
+        const tbody = document.getElementById('tbodyEmpleados');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const selAsis = document.getElementById('selectEmpAsistencia');
+        const selNom = document.getElementById('selectEmpNomina');
+
+        if (selAsis) selAsis.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
+        if (selNom) selNom.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
+
+        empleados.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${e.id}</td>
+                <td><strong>${e.nombre}</strong></td>
+                <td>${e.puesto || '-'}</td>
+                <td>Q ${formatearQ(e.salario)}</td>
+                <td>${e.formaPago}</td>
+                <td>${e.banco || '-'}</td>
+                <td>${e.cuenta || '-'}</td>
+                <td>
+                    <button class="btn-sec" onclick="eliminarEmpleado(${e.id})">Eliminar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            if (selAsis) selAsis.innerHTML += `<option value="${e.id}">${e.nombre} - ${e.puesto}</option>`;
+            if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre} - Base: Q ${formatearQ(e.salario)}</option>`;
+        });
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        const targetSection = document.getElementById(tabId);
+        const targetBtn = document.getElementById('btn-' + tabId);
+
+        if (targetSection) targetSection.classList.add('active');
+        if (targetBtn) targetBtn.classList.add('active');
+
+        if (tabId === 'mod2') cargarEmpleadoAsistencia();
+        if (tabId === 'mod3') cargarEmpleadoNomina();
+        if (tabId === 'mod4') evaluarCierre();
+    }
+
+    function cargarEmpleadoAsistencia() {
+        const select = document.getElementById('selectEmpAsistencia');
+        if (!select || !select.value) return;
+        const id = parseInt(select.value);
+        const emp = empleados.find(e => e.id === id);
+        if (!emp) return;
+
+        document.getElementById('evalLlegada').value = emp.llegada || "TIEMPO";
+        document.getElementById('evalPermiso').value = emp.permiso || "NO";
+        document.getElementById('cantHorasExtras').value = emp.horasExtras || 0;
+    }
+
+    function guardarAsistencia() {
+        const select = document.getElementById('selectEmpAsistencia');
+        if (!select || !select.value) {
+            alert("Por favor seleccione un empleado.");
+            return;
+        }
+        const id = parseInt(select.value);
+        const emp = empleados.find(e => e.id === id);
+        if (!emp) return;
+
+        emp.llegada = document.getElementById('evalLlegada').value;
+        emp.permiso = document.getElementById('evalPermiso').value;
+        emp.horasExtras = parseMontoSeguro(document.getElementById('cantHorasExtras').value);
+
+        enviarPeticionAppsScript({
+            action: "guardarAsistencia",
+            asistencia: {
+                id: emp.id,
+                llegada: emp.llegada,
+                permiso: emp.permiso,
+                horasExtras: emp.horasExtras
+            }
+        });
+
+        alert(`✅ Asistencia guardada correctamente en Google Sheets para ${emp.nombre}`);
+    }
+
+    function cargarEmpleadoNomina() {
+        const select = document.getElementById('selectEmpNomina');
+        if (!select || !select.value) return;
+        const id = parseInt(select.value);
+        const emp = empleados.find(e => e.id === id);
+        if (!emp) return;
+
+        document.getElementById('inputPrestamo').value = emp.prestamo || 0;
+        calcularNominaActual();
+    }
+
+    // CÁLCULO CATORCENAL DIRECTO
+    function calcularNominaActual() {
+        const select = document.getElementById('selectEmpNomina');
+        if (!select || !select.value) return;
+        const id = parseInt(select.value);
+        const emp = empleados.find(e => e.id === id);
+        if (!emp) return;
+
+        emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
+
+        const basePeriodo = parseMontoSeguro(emp.salario);
+
+        const salarioDiario = basePeriodo / 14;
+        const valorHora = (salarioDiario / 8) * 1.5;
+        const pagoExtras = (emp.horasExtras || 0) * valorHora;
+        
+        const neto = basePeriodo + pagoExtras - emp.prestamo;
+
+        emp.neto = neto > 0 ? neto : 0;
+
+        document.getElementById('lblBasePeriodo').innerText = formatearQ(basePeriodo);
+        document.getElementById('lblPagoExtras').innerText = formatearQ(pagoExtras);
+        document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
+        document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
+    }
+
+    // CIERRE Y DETALLE GENERAL
+    function evaluarCierre() {
+        const tbody = document.getElementById('tbodyCierre');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        let totalPlanilla = 0;
+
+        const empleadosValidos = empleados.filter(e => 
+            e.nombre && 
+            e.nombre.toString().trim() !== '' && 
+            e.nombre.toString().toLowerCase() !== 'nombre'
+        );
+
+        empleadosValidos.forEach(e => {
+            const basePeriodo = parseMontoSeguro(e.salario);
+
+            const salarioDiario = basePeriodo / 14;
+            const valorHora = (salarioDiario / 8) * 1.5;
+            const pagoExtras = (e.horasExtras || 0) * valorHora;
+            
+            const neto = basePeriodo + pagoExtras - (e.prestamo || 0);
+            e.neto = neto > 0 ? neto : 0;
+
+            totalPlanilla += e.neto;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${e.id}</td>
+                <td><strong>${e.nombre}</strong></td>
+                <td>${e.puesto || '-'}</td>
+                <td>${e.formaPago}</td>
+                <td><strong>Q ${formatearQ(e.neto)}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('totEmpleados').innerText = empleadosValidos.length;
+        document.getElementById('totPlanilla').innerText = formatearQ(totalPlanilla);
+    }
+</script>
+
+</body>
+</html>
