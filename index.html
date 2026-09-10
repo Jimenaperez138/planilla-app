@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Planilla GTQ</title>
+    <title>Sistema de Planilla Catorcenal GTQ</title>
     <!-- Librería HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -55,19 +55,14 @@
 <body>
 
 <div class="container">
-    <h1>Sistema de Planilla - Guatemala</h1>
+    <h1>Sistema de Planilla Catorcenal - Guatemala</h1>
     <div id="statusCarga" class="loading-badge">⏳ Sincronizando con Google Sheets...</div>
 
     <!-- Configuración del Período -->
     <div class="form-grid">
         <div class="form-group">
             <label>Tipo de Período:</label>
-            <select id="selectPeriodoPago" onchange="actualizarFechasYPeriodo()">
-                <option value="14" selected>Catorcenal (14 días)</option>
-                <option value="15">Quincenal (15 días)</option>
-                <option value="30">Mensual (30 días)</option>
-                <option value="7">Semanal (7 días)</option>
-            </select>
+            <input type="text" value="Catorcenal (14 días)" readonly style="background:#e2e8f0; font-weight:bold;">
         </div>
         <div class="form-group">
             <label>Fecha de Inicio:</label>
@@ -120,8 +115,8 @@
                 <input type="text" id="empPuesto" placeholder="Auxiliar">
             </div>
             <div class="form-group">
-                <label>Pago Base Catorcenal (GTQ):*</label>
-                <input type="number" id="empSalario" step="0.01" value="1950.00" placeholder="1950.00">
+                <label>Sueldo Catorcenal Fijo (GTQ):*</label>
+                <input type="number" id="empSalario" value="1950.00" step="0.01">
             </div>
             <div class="form-group">
                 <label>Forma de Pago:</label>
@@ -160,7 +155,7 @@
                     <th>ID</th>
                     <th>Nombre de Empleado</th>
                     <th>Puesto</th>
-                    <th>Base Catorcenal</th>
+                    <th>Sueldo Catorcenal</th>
                     <th>Pago</th>
                     <th>Banco / Cuenta</th>
                     <th>Acciones</th>
@@ -193,7 +188,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Horas Extras:</label>
+                <label>Horas Extras Catorcenales:</label>
                 <input type="number" id="cantHorasExtras" value="0" step="0.5">
             </div>
         </div>
@@ -202,7 +197,7 @@
 
     <!-- MÓDULO 3 -->
     <div id="mod3" class="section">
-        <h2>3. Cálculo de Nómina</h2>
+        <h2>3. Cálculo de Nómina Catorcenal</h2>
         <div class="form-grid">
             <div class="form-group">
                 <label>Seleccionar Empleado:</label>
@@ -214,12 +209,12 @@
             </div>
         </div>
         <div class="resumen-card">
-            <h3>Desglose del Pago</h3>
-            <p><strong>Salario Base Período:</strong> Q <span id="lblBasePeriodo">0.00</span></p>
+            <h3>Desglose del Pago Catorcenal</h3>
+            <p><strong>Sueldo Catorcenal Fijo:</strong> Q <span id="lblBasePeriodo">1,950.00</span></p>
             <p><strong>Pago Horas Extras:</strong> Q <span id="lblPagoExtras">0.00</span></p>
             <p class="text-danger"><strong>Descuento Préstamo:</strong> Q -<span id="lblDescuentoPrestamo">0.00</span></p>
             <hr>
-            <p style="font-size: 1.2rem; color: #16a34a;"><strong>Monto Neto a Pagar:</strong> Q <span id="lblNetoPagar">0.00</span></p>
+            <p style="font-size: 1.2rem; color: #16a34a;"><strong>Monto Neto Catorcenal a Pagar:</strong> Q <span id="lblNetoPagar">1,950.00</span></p>
         </div>
     </div>
 
@@ -240,7 +235,7 @@
         <!-- Área Virtual para Generar el PDF Individual -->
         <div id="areaBoletaPdf" class="boleta-container">
             <div class="boleta-header">
-                <h2>COMPROBANTE DE PAGO DE NÓMINA</h2>
+                <h2>COMPROBANTE DE PAGO CATORCENAL</h2>
                 <p style="margin: 5px 0;"><strong>Período:</strong> <span id="pdfRangoPeriodo">-</span></p>
             </div>
 
@@ -265,8 +260,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Salario Base Período</td>
-                        <td style="text-align: right;">Q <span id="bSalarioBase">0.00</span></td>
+                        <td>Sueldo Catorcenal Fijo</td>
+                        <td style="text-align: right;">Q <span id="bSalarioBase">1,950.00</span></td>
                         <td>Préstamos / Anticipos</td>
                         <td style="text-align: right;" class="text-danger">Q <span id="bPrestamos">0.00</span></td>
                     </tr>
@@ -278,7 +273,7 @@
                     </tr>
                     <tr>
                         <td><strong>Total Ingresos</strong></td>
-                        <td style="text-align: right;"><strong>Q <span id="bTotIngresos">0.00</span></strong></td>
+                        <td style="text-align: right;"><strong>Q <span id="bTotIngresos">1,950.00</span></strong></td>
                         <td><strong>Total Descuentos</strong></td>
                         <td style="text-align: right;" class="text-danger"><strong>Q <span id="bTotDescuentos">0.00</span></strong></td>
                     </tr>
@@ -286,7 +281,7 @@
             </table>
 
             <div style="background: #f1f5f9; padding: 12px; border-radius: 4px; text-align: right; font-size: 1.1rem;">
-                <strong>LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">0.00</span></strong>
+                <strong>LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">1,950.00</span></strong>
             </div>
 
             <div class="firma-box">
@@ -302,13 +297,14 @@
 </div>
 
 <script>
+    // REEMPLAZA ESTA URL POR TU URL DE GOOGLE APPS SCRIPT
     const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
 
-    let diasPeriodo = 14;
+    const diasPeriodo = 14;
     let empleados = [];
 
     function parseMontoSeguro(val) {
-        if (!val && val !== 0) return 1950; // Valor por defecto Q 1,950.00
+        if (!val && val !== 0) return 1950;
         if (typeof val === 'number') return val;
         let str = val.toString().trim().replace(/[^0-9.,]/g, '');
         if (str.includes('.') && str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
@@ -424,14 +420,11 @@
     }
 
     function actualizarFechasYPeriodo() {
-        const select = document.getElementById('selectPeriodoPago');
-        if (select) diasPeriodo = parseInt(select.value) || 14;
-
         const fechaInicioInput = document.getElementById('fechaInicioPeriodo');
         if (fechaInicioInput && fechaInicioInput.value) {
             const fInicio = new Date(fechaInicioInput.value + 'T00:00:00');
             const fFin = new Date(fInicio);
-            fFin.setDate(fFin.getDate() + (diasPeriodo - 1));
+            fFin.setDate(fFin.getDate() + 13);
 
             const fFinStr = fFin.toISOString().split('T')[0];
             if (document.getElementById('fechaFinPeriodo')) document.getElementById('fechaFinPeriodo').value = fFinStr;
@@ -452,7 +445,7 @@
         const salario = parseMontoSeguro(document.getElementById('empSalario').value);
 
         if (!nombre || salario <= 0) {
-            alert("Por favor ingrese al menos un Nombre y un Pago Catorcenal válido.");
+            alert("Por favor ingrese al menos un Nombre.");
             return;
         }
 
@@ -464,7 +457,7 @@
             dpi: document.getElementById('empDpi').value.trim(),
             nit: document.getElementById('empNit').value.trim() || 'C/F',
             puesto: document.getElementById('empPuesto').value.trim(),
-            salario: salario, // Base catorcenal (Q 1,950.00)
+            salario: salario, // Q 1,950.00 Catorcenal Directo
             formaPago: document.getElementById('empFormaPago').value,
             banco: document.getElementById('empBanco').value,
             cuenta: document.getElementById('empNumCuenta').value.trim(),
@@ -608,17 +601,16 @@
 
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
-        // El salario base guardado equivale a 14 días (Q 1,950.00 por defecto)
-        const baseCatorcenal = parseMontoSeguro(emp.salario);
-        const basePeriodo = (baseCatorcenal / 14) * diasPeriodo;
-        const salarioDiario = baseCatorcenal / 14;
-        const valorHora = (salarioDiario / 8) * 1.5;
-        const pagoExtras = (emp.horasExtras || 0) * valorHora;
+        // Sueldo Catorcenal Fijo (Sin división mensual)
+        const sueldoCatorcenal = parseMontoSeguro(emp.salario);
+        const pagoDiario = sueldoCatorcenal / 14;
+        const valorHoraExtra = (pagoDiario / 8) * 1.5;
+        const pagoExtras = (emp.horasExtras || 0) * valorHoraExtra;
 
-        const neto = basePeriodo + pagoExtras - emp.prestamo;
+        const neto = sueldoCatorcenal + pagoExtras - emp.prestamo;
         emp.neto = neto > 0 ? neto : 0;
 
-        document.getElementById('lblBasePeriodo').innerText = formatearQ(basePeriodo);
+        document.getElementById('lblBasePeriodo').innerText = formatearQ(sueldoCatorcenal);
         document.getElementById('lblPagoExtras').innerText = formatearQ(pagoExtras);
         document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
         document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
@@ -637,13 +629,12 @@
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
 
-        const baseCatorcenal = parseMontoSeguro(emp.salario);
-        const basePeriodo = (baseCatorcenal / 14) * diasPeriodo;
-        const salarioDiario = baseCatorcenal / 14;
-        const valorHora = (salarioDiario / 8) * 1.5;
-        const pagoExtras = (emp.horasExtras || 0) * valorHora;
+        const sueldoCatorcenal = parseMontoSeguro(emp.salario);
+        const pagoDiario = sueldoCatorcenal / 14;
+        const valorHoraExtra = (pagoDiario / 8) * 1.5;
+        const pagoExtras = (emp.horasExtras || 0) * valorHoraExtra;
 
-        const totIngresos = basePeriodo + pagoExtras;
+        const totIngresos = sueldoCatorcenal + pagoExtras;
         const totDescuentos = emp.prestamo || 0;
         const neto = totIngresos - totDescuentos;
 
@@ -655,7 +646,7 @@
         document.getElementById('bFormaPago').innerText = emp.formaPago || 'TRANSFERENCIA';
         document.getElementById('bBancoCuenta').innerText = `${emp.banco || ''} ${emp.cuenta ? '(' + emp.cuenta + ')' : ''}`;
 
-        document.getElementById('bSalarioBase').innerText = formatearQ(basePeriodo);
+        document.getElementById('bSalarioBase').innerText = formatearQ(sueldoCatorcenal);
         document.getElementById('bCantHoras').innerText = emp.horasExtras || 0;
         document.getElementById('bHorasExtras').innerText = formatearQ(pagoExtras);
         document.getElementById('bPrestamos').innerText = formatearQ(emp.prestamo || 0);
