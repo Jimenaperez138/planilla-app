@@ -297,8 +297,7 @@
 </div>
 
 <script>
-    // REEMPLAZA ESTA URL POR TU URL DE GOOGLE APPS SCRIPT
-    const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbyZCYArPgMwQlu28Q0sUUxSeNHpBVW-DShgMG6bQPZG4pirbEL-zFoMo6f-C5hyv-5SmQ/exec";
 
     const diasPeriodo = 14;
     let empleados = [];
@@ -656,7 +655,8 @@
         document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
     }
 
-    // --- DESCARGAR PDF POR BOTÓN DE TABLA O SELECCIÓN ---
+   // --- FUNCIONES DE DESCARGA PDF CORREGIDAS Y AJUSTADAS AL TAMAÑO DE HOJA ---
+
     function descargarPDFPorId(id) {
         renderizarBoletaIndividual(id);
         const emp = empleados.find(e => e.id === id);
@@ -666,10 +666,15 @@
         const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
 
         const opciones = {
-            margin: 10,
+            margin: [10, 10, 10, 10],
             filename: nombreArchivo,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                scrollY: 0,
+                windowWidth: 900 
+            },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
@@ -684,6 +689,28 @@
 
     async function descargarTodosLosPDFs() {
         if (!empleados.length) return alert("No hay empleados registrados.");
+
+        for (let emp of empleados) {
+            renderizarBoletaIndividual(emp.id);
+            const elemento = document.getElementById('areaBoletaPdf');
+            const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
+
+            const opciones = {
+                margin: [10, 10, 10, 10],
+                filename: nombreArchivo,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0,
+                    windowWidth: 900 
+                },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opciones).from(elemento).save();
+        }
+    }        if (!empleados.length) return alert("No hay empleados registrados.");
 
         for (let emp of empleados) {
             renderizarBoletaIndividual(emp.id);
