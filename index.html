@@ -34,7 +34,7 @@
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .text-danger { color: #dc2626; }
 
-        /* Estilos específicos para la Boleta Individual de Pago (PDF Virtual) */
+        /* Estilos específicos para la Boleta Individual de Pago */
         .boleta-container {
             background: #ffffff;
             border: 2px solid #334155;
@@ -63,10 +63,10 @@
         <div class="form-group">
             <label>Tipo de Período:</label>
             <select id="selectPeriodoPago" onchange="actualizarFechasYPeriodo()">
-                <option value="14" selected>Catorcenal</option>
-                <option value="15">Quincenal</option>
-                <option value="30">Mensual</option>
-                <option value="7">Semanal</option>
+                <option value="14" selected>Catorcenal (14 días)</option>
+                <option value="15">Quincenal (15 días)</option>
+                <option value="30">Mensual (30 días)</option>
+                <option value="7">Semanal (7 días)</option>
             </select>
         </div>
         <div class="form-group">
@@ -120,8 +120,8 @@
                 <input type="text" id="empPuesto" placeholder="Auxiliar">
             </div>
             <div class="form-group">
-                <label>Salario Mensual Base (GTQ):*</label>
-                <input type="number" id="empSalario" step="0.01" placeholder="3075.10">
+                <label>Pago Base Catorcenal (GTQ):*</label>
+                <input type="number" id="empSalario" step="0.01" value="1950.00" placeholder="1950.00">
             </div>
             <div class="form-group">
                 <label>Forma de Pago:</label>
@@ -160,7 +160,7 @@
                     <th>ID</th>
                     <th>Nombre de Empleado</th>
                     <th>Puesto</th>
-                    <th>Salario Base</th>
+                    <th>Base Catorcenal</th>
                     <th>Pago</th>
                     <th>Banco / Cuenta</th>
                     <th>Acciones</th>
@@ -286,7 +286,7 @@
             </table>
 
             <div style="background: #f1f5f9; padding: 12px; border-radius: 4px; text-align: right; font-size: 1.1rem;">
-                <strong>LIQUIDO A RECIBIR: Q <span id="bNetoRecibir">0.00</span></strong>
+                <strong>LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">0.00</span></strong>
             </div>
 
             <div class="firma-box">
@@ -302,19 +302,19 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbzbKZbb8hENal0cyniMNjch7CtsXqoQHDlUb0bxV8Jcjz2LgrdS9Vkjk0baIP8e8uE4RA/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
 
     let diasPeriodo = 14;
     let empleados = [];
 
     function parseMontoSeguro(val) {
-        if (!val) return 0;
+        if (!val && val !== 0) return 1950; // Valor por defecto Q 1,950.00
         if (typeof val === 'number') return val;
         let str = val.toString().trim().replace(/[^0-9.,]/g, '');
         if (str.includes('.') && str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
         else if (str.includes(',')) str = str.replace(',', '.');
         let num = parseFloat(str);
-        return isNaN(num) ? 0 : num;
+        return isNaN(num) ? 1950 : num;
     }
 
     function formatearQ(monto) {
@@ -364,14 +364,14 @@
                         dpi: getVal(['dpi']),
                         nit: getVal(['nit']) || 'C/F',
                         puesto: getVal(['puesto']),
-                        salario: parseMontoSeguro(getVal(['salario', 'salario base'])),
+                        salario: parseMontoSeguro(getVal(['salario', 'salario base', 'pago catorcenal'])),
                         formaPago: getVal(['formapago', 'forma de pago']) || 'TRANSFERENCIA',
                         banco: getVal(['banco']),
                         cuenta: getVal(['cuenta', 'no. cuenta']),
                         llegada: getVal(['llegada']) || "TIEMPO",
                         permiso: getVal(['permiso']) || "NO",
-                        horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])),
-                        prestamo: parseMontoSeguro(getVal(['prestamo', 'préstamo'])),
+                        horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])) || 0,
+                        prestamo: parseMontoSeguro(getVal(['prestamo', 'préstamo'])) || 0,
                         neto: 0
                     };
                 });
@@ -452,7 +452,7 @@
         const salario = parseMontoSeguro(document.getElementById('empSalario').value);
 
         if (!nombre || salario <= 0) {
-            alert("Por favor ingrese al menos un Nombre y Salario válidos.");
+            alert("Por favor ingrese al menos un Nombre y un Pago Catorcenal válido.");
             return;
         }
 
@@ -464,7 +464,7 @@
             dpi: document.getElementById('empDpi').value.trim(),
             nit: document.getElementById('empNit').value.trim() || 'C/F',
             puesto: document.getElementById('empPuesto').value.trim(),
-            salario: salario,
+            salario: salario, // Base catorcenal (Q 1,950.00)
             formaPago: document.getElementById('empFormaPago').value,
             banco: document.getElementById('empBanco').value,
             cuenta: document.getElementById('empNumCuenta').value.trim(),
@@ -488,11 +488,11 @@
         document.getElementById('empDpi').value = '';
         document.getElementById('empNit').value = '';
         document.getElementById('empPuesto').value = '';
-        document.getElementById('empSalario').value = '';
+        document.getElementById('empSalario').value = '1950.00';
         document.getElementById('empBanco').value = '';
         document.getElementById('empNumCuenta').value = '';
 
-        alert(`✅ Empleado "${nombre}" registrado y enviado a Google Sheets.`);
+        alert(`✅ Empleado "${nombre}" registrado con pago de Q ${formatearQ(salario)} por catorcena.`);
     }
 
     function eliminarEmpleado(id) {
@@ -539,7 +539,7 @@
             tbody.appendChild(tr);
 
             if (selAsis) selAsis.innerHTML += `<option value="${e.id}">${e.nombre} - ${e.puesto}</option>`;
-            if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre} - Base: Q ${formatearQ(e.salario)}</option>`;
+            if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre} - Q ${formatearQ(e.salario)} / Catorcena</option>`;
             if (selPdf) selPdf.innerHTML += `<option value="${e.id}">${e.nombre} - ${e.puesto}</option>`;
         });
     }
@@ -608,9 +608,10 @@
 
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
-        const baseMensual = parseMontoSeguro(emp.salario);
-        const basePeriodo = (baseMensual / 30) * diasPeriodo;
-        const salarioDiario = baseMensual / 30;
+        // El salario base guardado equivale a 14 días (Q 1,950.00 por defecto)
+        const baseCatorcenal = parseMontoSeguro(emp.salario);
+        const basePeriodo = (baseCatorcenal / 14) * diasPeriodo;
+        const salarioDiario = baseCatorcenal / 14;
         const valorHora = (salarioDiario / 8) * 1.5;
         const pagoExtras = (emp.horasExtras || 0) * valorHora;
 
@@ -623,7 +624,7 @@
         document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
     }
 
-    // --- MÓDULO 4: RENDERIZAR BOLETA INDIVIDUAL DE PAGO (SIN IGSS) ---
+    // --- MÓDULO 4: RENDERIZAR BOLETA INDIVIDUAL DE PAGO ---
     function renderizarBoletaIndividual(empId) {
         const select = document.getElementById('selectEmpPdf');
         let id = empId || (select ? parseInt(select.value) : null);
@@ -636,9 +637,9 @@
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
 
-        const baseMensual = parseMontoSeguro(emp.salario);
-        const basePeriodo = (baseMensual / 30) * diasPeriodo;
-        const salarioDiario = baseMensual / 30;
+        const baseCatorcenal = parseMontoSeguro(emp.salario);
+        const basePeriodo = (baseCatorcenal / 14) * diasPeriodo;
+        const salarioDiario = baseCatorcenal / 14;
         const valorHora = (salarioDiario / 8) * 1.5;
         const pagoExtras = (emp.horasExtras || 0) * valorHora;
 
@@ -686,33 +687,27 @@
 
     function descargarPDFSeleccionado() {
         const select = document.getElementById('selectEmpPdf');
-        if (!select || !select.value) return alert("Por favor seleccione un empleado.");
+        if (!select || !select.value) return alert("Seleccione un empleado.");
         descargarPDFPorId(parseInt(select.value));
     }
 
-    // --- DESCARGAR TODOS LOS PDFS SEPARADOS ---
     async function descargarTodosLosPDFs() {
-        if (empleados.length === 0) return alert("No hay empleados registrados.");
-        
-        if (confirm(`Se generarán ${empleados.length} archivos PDF independientes. ¿Deseas continuar?`)) {
-            for (let emp of empleados) {
-                renderizarBoletaIndividual(emp.id);
-                
-                const elemento = document.getElementById('areaBoletaPdf');
-                const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
+        if (!empleados.length) return alert("No hay empleados registrados.");
 
-                const opciones = {
-                    margin: 10,
-                    filename: nombreArchivo,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-                };
+        for (let emp of empleados) {
+            renderizarBoletaIndividual(emp.id);
+            const elemento = document.getElementById('areaBoletaPdf');
+            const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
 
-                await html2pdf().set(opciones).from(elemento).save();
-                // Pequeña pausa de 1 segundo entre descargas
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+            const opciones = {
+                margin: 10,
+                filename: nombreArchivo,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opciones).from(elemento).save();
         }
     }
 </script>
