@@ -34,7 +34,7 @@
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .text-danger { color: #dc2626; }
 
-        /* Estilos específicos para la Boleta Individual de Pago */
+        /* Estilos de Boleta Individual */
         .boleta-container {
             background: #ffffff;
             border: 2px solid #334155;
@@ -232,7 +232,6 @@
         <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar PDF de Empleado Seleccionado</button>
         <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS los Empleados</button>
 
-        <!-- Área Virtual para Generar el PDF Individual -->
         <div id="areaBoletaPdf" class="boleta-container">
             <div class="boleta-header">
                 <h2>COMPROBANTE DE PAGO CATORCENAL</h2>
@@ -297,9 +296,9 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyZCYArPgMwQlu28Q0sUUxSeNHpBVW-DShgMG6bQPZG4pirbEL-zFoMo6f-C5hyv-5SmQ/exec";
+    // REEMPLAZA ESTA URL POR TU URL REAL DE GOOGLE APPS SCRIPT
+    const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
 
-    const diasPeriodo = 14;
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -439,6 +438,18 @@
         }
     }
 
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+
+        if (tabId === 'mod2') cargarEmpleadoAsistencia();
+        if (tabId === 'mod3') cargarEmpleadoNomina();
+        if (tabId === 'mod4') renderizarBoletaIndividual();
+    }
+
     function agregarEmpleado() {
         const nombre = document.getElementById('empNombre').value.trim();
         const salario = parseMontoSeguro(document.getElementById('empSalario').value);
@@ -456,7 +467,7 @@
             dpi: document.getElementById('empDpi').value.trim(),
             nit: document.getElementById('empNit').value.trim() || 'C/F',
             puesto: document.getElementById('empPuesto').value.trim(),
-            salario: salario, // Q 1,950.00 Catorcenal Directo
+            salario: salario,
             formaPago: document.getElementById('empFormaPago').value,
             banco: document.getElementById('empBanco').value,
             cuenta: document.getElementById('empNumCuenta').value.trim(),
@@ -536,18 +547,6 @@
         });
     }
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
-        document.getElementById(tabId).classList.add('active');
-        document.getElementById('btn-' + tabId).classList.add('active');
-
-        if (tabId === 'mod2') cargarEmpleadoAsistencia();
-        if (tabId === 'mod3') cargarEmpleadoNomina();
-        if (tabId === 'mod4') renderizarBoletaIndividual();
-    }
-
     function cargarEmpleadoAsistencia() {
         const select = document.getElementById('selectEmpAsistencia');
         if (!select || !select.value) return;
@@ -600,7 +599,6 @@
 
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
-        // Sueldo Catorcenal Fijo (Sin división mensual)
         const sueldoCatorcenal = parseMontoSeguro(emp.salario);
         const pagoDiario = sueldoCatorcenal / 14;
         const valorHoraExtra = (pagoDiario / 8) * 1.5;
@@ -615,7 +613,6 @@
         document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
     }
 
-    // --- MÓDULO 4: RENDERIZAR BOLETA INDIVIDUAL DE PAGO ---
     function renderizarBoletaIndividual(empId) {
         const select = document.getElementById('selectEmpPdf');
         let id = empId || (select ? parseInt(select.value) : null);
@@ -655,8 +652,7 @@
         document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
     }
 
-   // --- FUNCIONES DE DESCARGA PDF CORREGIDAS Y AJUSTADAS AL TAMAÑO DE HOJA ---
-
+    // --- FUNCIONES DE DESCARGA PDF ---
     function descargarPDFPorId(id) {
         renderizarBoletaIndividual(id);
         const emp = empleados.find(e => e.id === id);
@@ -705,23 +701,6 @@
                     scrollY: 0,
                     windowWidth: 900 
                 },
-                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-            };
-
-            await html2pdf().set(opciones).from(elemento).save();
-        }
-    }        if (!empleados.length) return alert("No hay empleados registrados.");
-
-        for (let emp of empleados) {
-            renderizarBoletaIndividual(emp.id);
-            const elemento = document.getElementById('areaBoletaPdf');
-            const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
-
-            const opciones = {
-                margin: 10,
-                filename: nombreArchivo,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
             };
 
