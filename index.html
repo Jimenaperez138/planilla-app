@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+         <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -279,7 +279,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwjB3J1JznIxkSNVOXzpWsVzuGZ_Ln2kXmyanU8JeCU-nagamviTqRyNcau4lZyMaczUg/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbx1xZl2lj_KQQs2VS7aKhV2nvOp93Kg01GtUwxpVs-4pb078lujEhJ2lwKHP3urXkqwaA/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -398,7 +398,6 @@
             prestamo: 0
         };
 
-        // Guardar en Google Sheets
         fetch(URL_API, {
             method: "POST",
             mode: "no-cors",
@@ -541,7 +540,7 @@
         document.getElementById('pdfRangoPeriodo').innerText = txt;
     }
 
-       function renderizarBoletaIndividual(empId) {
+    function renderizarBoletaIndividual(empId) {
         const select = document.getElementById('selectEmpPdf');
         let id = empId || (select ? parseInt(select.value) : null);
         if (!id && empleados.length > 0) id = empleados[0].id;
@@ -585,85 +584,44 @@
         document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
     }
 
-    async function generarPDFDeElemento(elemento, nombreArchivo) {
-        // Aseguramos que la pestaña y el elemento estén visibles
+    function descargarPDFSeleccionado() {
+        const element = document.getElementById('areaBoletaPdf');
+        const nombreEmp = document.getElementById('bNombre').innerText.trim() || "Boleta";
+        const opt = {
+            margin:       10,
+            filename:     `Boleta_${nombreEmp.replace(/\s+/g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+
+    function descargarPDFPorId(id) {
         switchTab('mod4');
-        await new Promise(resolve => setTimeout(resolve, 300)); // Espera a que el DOM se dibuje
-
-        const opciones = {
-            margin: [10, 10, 10, 10],
-            filename: nombreArchivo,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                logging: false,
-                scrollX: 0,
-                scrollY: 0
-            },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-        };
-
-        return html2pdf().set(opciones).from(elemento).save();
-    }
-
- async function descargarPDFPorId(id) {
         renderizarBoletaIndividual(id);
-        const emp = empleados.find(e => e.id === id);
-        if (!emp) return;
-
-        const elementoOriginal = document.getElementById('areaBoletaPdf');
-        
-        // Crear un clon temporal fuera de pantalla para que jamás salga en blanco
-        const clon = elementoOriginal.cloneNode(true);
-        clon.style.position = 'absolute';
-        clon.style.left = '-9999px';
-        clon.style.top = '0';
-        clon.style.display = 'block';
-        clon.style.visibility = 'visible';
-        clon.style.background = '#ffffff';
-        clon.style.width = '700px';
-        document.body.appendChild(clon);
-
-        await new Promise(resolve => setTimeout(resolve, 250));
-
-        const opciones = {
-            margin: [10, 10, 10, 10],
-            filename: `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                logging: false,
-                width: 700,
-                windowWidth: 700
-            },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-        };
-
-        try {
-            await html2pdf().set(opciones).from(clon).save();
-        } catch (error) {
-            console.error("Error al generar PDF:", error);
-            alert("⚠️ Hubo un error al generar el PDF.");
-        } finally {
-            document.body.removeChild(clon);
-        }
-    }
-
-    function descargarPDFSeleccionado()
-        const select = document.getElementById('selectEmpPdf');
-        if (!select || !select.value) return alert("Seleccione un empleado.");
-        descargarPDFPorId(parseInt(select.value));
+        setTimeout(() => {
+            descargarPDFSeleccionado();
+        }, 300);
     }
 
     async function descargarTodosLosPDFs() {
-        if (!empleados.length) return alert("No hay empleados registrados.");
-        for (let emp of empleados) {
-            await descargarPDFPorId(emp.id);
+        if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
+        switchTab('mod4');
+        for (const emp of empleados) {
+            renderizarBoletaIndividual(emp.id);
+            await new Promise(r => setTimeout(r, 500));
+            const element = document.getElementById('areaBoletaPdf');
+            const opt = {
+                margin:       10,
+                filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+            await html2pdf().set(opt).from(element).save();
         }
     }
 </script>
 </body>
 </html>
-      
