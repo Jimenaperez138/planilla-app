@@ -541,7 +541,7 @@
         document.getElementById('pdfRangoPeriodo').innerText = txt;
     }
 
-    function renderizarBoletaIndividual(empId) {
+       function renderizarBoletaIndividual(empId) {
         const select = document.getElementById('selectEmpPdf');
         let id = empId || (select ? parseInt(select.value) : null);
         if (!id && empleados.length > 0) id = empleados[0].id;
@@ -585,42 +585,85 @@
         document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
     }
 
-    function descargarPDFPorId(id) {
+    async function generarPDFDeElemento(elemento, nombreArchivo) {
+        // Aseguramos que la pestaña y el elemento estén visibles
+        switchTab('mod4');
+        await new Promise(resolve => setTimeout(resolve, 300)); // Espera a que el DOM se dibuje
+
+        const opciones = {
+            margin: [10, 10, 10, 10],
+            filename: nombreArchivo,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                logging: false,
+                scrollX: 0,
+                scrollY: 0
+            },
+            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+        };
+
+        return html2pdf().set(opciones).from(elemento).save();
+    }
+
+ async function descargarPDFPorId(id) {
         renderizarBoletaIndividual(id);
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
 
-        const elemento = document.getElementById('areaBoletaPdf');
-        const nombreArchivo = `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
+        const elementoOriginal = document.getElementById('areaBoletaPdf');
+        
+        // Crear un clon temporal fuera de pantalla para que jamás salga en blanco
+        const clon = elementoOriginal.cloneNode(true);
+        clon.style.position = 'absolute';
+        clon.style.left = '-9999px';
+        clon.style.top = '0';
+        clon.style.display = 'block';
+        clon.style.visibility = 'visible';
+        clon.style.background = '#ffffff';
+        clon.style.width = '700px';
+        document.body.appendChild(clon);
+
+        await new Promise(resolve => setTimeout(resolve, 250));
+
         const opciones = {
-            margin: [10, 10, 10, 10], filename: nombreArchivo,
+            margin: [10, 10, 10, 10],
+            filename: `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, width: 700, windowWidth: 700 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                logging: false,
+                width: 700,
+                windowWidth: 700
+            },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
-        html2pdf().set(opciones).from(elemento).save();
+
+        try {
+            await html2pdf().set(opciones).from(clon).save();
+        } catch (error) {
+            console.error("Error al generar PDF:", error);
+            alert("⚠️ Hubo un error al generar el PDF.");
+        } finally {
+            document.body.removeChild(clon);
+        }
     }
 
-    function descargarPDFSeleccionado() {
+    function descargarPDFSeleccionado()
         const select = document.getElementById('selectEmpPdf');
         if (!select || !select.value) return alert("Seleccione un empleado.");
         descargarPDFPorId(parseInt(select.value));
     }
 
     async function descargarTodosLosPDFs() {
-        if (!empleados.length) return alert("No hay empleados.");
+        if (!empleados.length) return alert("No hay empleados registrados.");
         for (let emp of empleados) {
-            renderizarBoletaIndividual(emp.id);
-            const elemento = document.getElementById('areaBoletaPdf');
-            const opciones = {
-                margin: [10, 10, 10, 10], filename: `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, width: 700, windowWidth: 700 },
-                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-            };
-            await html2pdf().set(opciones).from(elemento).save();
+            await descargarPDFPorId(emp.id);
         }
     }
 </script>
 </body>
 </html>
+      
