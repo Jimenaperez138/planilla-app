@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Planilla Catorcenal GTQ</title>
-    <!-- Librería HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
@@ -27,8 +26,8 @@
         .btn-pdf-sm:hover { background: #1d4ed8; }
         .btn-pdf { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
         .btn-pdf:hover { background: #1d4ed8; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         th { background: #f1f5f9; color: #334155; }
         .resumen-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
@@ -49,12 +48,12 @@
             margin-right: auto;
             box-sizing: border-box;
             overflow: hidden;
-        }        }
+        }
         .boleta-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
         .boleta-header h2 { border-bottom: none; margin: 0; padding: 0; font-size: 1.4rem; }
-        .boleta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; }
+        .boleta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; font-size: 0.85rem; }
         .boleta-table { width: 100%; border: 1px solid #cbd5e1; margin-bottom: 20px; }
-        .boleta-table th, .boleta-table td { border: 1px solid #cbd5e1; padding: 8px; }
+        .boleta-table th, .boleta-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 0.85rem; }
         .firma-box { margin-top: 40px; display: flex; justify-content: space-around; text-align: center; }
         .firma-linea { border-top: 1px solid #000; width: 200px; padding-top: 5px; font-size: 0.85rem; }
     </style>
@@ -65,66 +64,27 @@
     <h1>Sistema de Planilla Catorcenal - Guatemala</h1>
     <div id="statusCarga" class="loading-badge">⏳ Sincronizando con Google Sheets...</div>
 
-    <!-- Configuración del Período -->
-    <div class="form-grid">
-        <div class="form-group">
-            <label>Tipo de Período:</label>
-            <input type="text" value="Catorcenal (14 días)" readonly style="background:#e2e8f0; font-weight:bold;">
-        </div>
-        <div class="form-group">
-            <label>Fecha de Inicio:</label>
-            <input type="date" id="fechaInicioPeriodo" onchange="actualizarFechasYPeriodo()">
-        </div>
-        <div class="form-group">
-            <label>Fecha Fin Estimada:</label>
-            <input type="date" id="fechaFinPeriodo" readonly>
-        </div>
-        <div class="form-group">
-            <label>Período Activo:</label>
-            <div style="padding-top:8px; font-weight:bold; color:#2563eb;" id="lblRangoPeriodo">-</div>
-        </div>
-    </div>
-
     <!-- Pestañas -->
     <div class="nav-tabs">
         <button class="tab-btn active" id="btn-mod1" onclick="switchTab('mod1')">1. Registro Empleados</button>
         <button class="tab-btn" id="btn-mod2" onclick="switchTab('mod2')">2. Asistencia e Incidencias</button>
         <button class="tab-btn" id="btn-mod3" onclick="switchTab('mod3')">3. Cálculo de Nómina</button>
-        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Boletas Individuales (PDF)</button>
+        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Boletas Individuales</button>
     </div>
 
     <!-- MÓDULO 1 -->
     <div id="mod1" class="section active">
         <h2>1. Registro de Empleados</h2>
         <div class="form-grid">
-            <div class="form-group">
-                <label>Nombre Completo:*</label>
-                <input type="text" id="empNombre" placeholder="Nombre Apellido">
-            </div>
-            <div class="form-group">
-                <label>Teléfono:</label>
-                <input type="text" id="empTel" placeholder="55550000">
-            </div>
-            <div class="form-group">
-                <label>Correo Electrónico:</label>
-                <input type="email" id="empCorreo" placeholder="correo@empresa.com">
-            </div>
-            <div class="form-group">
-                <label>DPI:</label>
-                <input type="text" id="empDpi" placeholder="2551 17868 0505">
-            </div>
-            <div class="form-group">
-                <label>NIT:</label>
-                <input type="text" id="empNit" placeholder="C/F">
-            </div>
-            <div class="form-group">
-                <label>Puesto:</label>
-                <input type="text" id="empPuesto" placeholder="Auxiliar">
-            </div>
-            <div class="form-group">
-                <label>Sueldo Catorcenal Fijo (GTQ):*</label>
-                <input type="number" id="empSalario" value="1950.00" step="0.01">
-            </div>
+            <div class="form-group"><label>Nombre Completo:*</label><input type="text" id="empNombre" placeholder="Ej: Sergio Giovanny Patzán"></div>
+            <div class="form-group"><label>DPI:</label><input type="text" id="empDpi" placeholder="2551 17868 0505"></div>
+            <div class="form-group"><label>Fecha de Ingreso:</label><input type="date" id="empFechaIngreso"></div>
+            <div class="form-group"><label>Grupo:</label><input type="text" id="empGrupo" placeholder="Ej: AYUDANTES VIVERO"></div>
+            <div class="form-group"><label>Puesto Específico:</label><input type="text" id="empPuesto" placeholder="AYUDANTE DE VIVERO CALZA"></div>
+            <div class="form-group"><label>Presupuesto:</label><input type="text" id="empPresupuesto" placeholder="Ej: VICLZ"></div>
+            <div class="form-group"><label>Actividad:</label><input type="text" id="empActividad" placeholder="Ej: VIVERO CALZA"></div>
+            <div class="form-group"><label>Sueldo Catorcenal Fijo (GTQ):*</label><input type="number" id="empSalario" value="1950.00" step="0.01"></div>
+            <div class="form-group"><label>Bonificación (GTQ):</label><input type="number" id="empBonificacion" value="0.00" step="0.01"></div>
             <div class="form-group">
                 <label>Forma de Pago:</label>
                 <select id="empFormaPago">
@@ -133,69 +93,47 @@
                     <option value="EFECTIVO">EFECTIVO</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Banco:</label>
-                <select id="empBanco">
-                    <option value="">-- Seleccione Banco --</option>
-                    <option value="BANRURAL">BANRURAL</option>
-                    <option value="BANCO INDUSTRIAL">BANCO INDUSTRIAL (BI)</option>
-                    <option value="G&T CONTINENTAL">G&T CONTINENTAL</option>
-                    <option value="BAM">BAM</option>
-                    <option value="BAC CREDOMATIC">BAC CREDOMATIC</option>
-                    <option value="BANCO PROMERICA">BANCO PROMERICA</option>
-                    <option value="INTERBANCO">INTERBANCO</option>
-                    <option value="CHN">CHN</option>
-                    <option value="OTRO / N/A">OTRO / N/A</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>No. Cuenta:</label>
-                <input type="text" id="empNumCuenta" placeholder="12345678">
-            </div>
+            <div class="form-group"><label>No. Cuenta:</label><input type="text" id="empNumCuenta" placeholder="4562159204"></div>
+            <div class="form-group"><label>Cód. Acredítame:</label><input type="text" id="empCodigoAcreditame" placeholder="1596292"></div>
         </div>
         <button class="btn-main" onclick="agregarEmpleado()">+ Agregar Empleado</button>
 
-        <h3>Lista de Empleados Registrados</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre de Empleado</th>
-                    <th>Puesto</th>
-                    <th>Sueldo Catorcenal</th>
-                    <th>Pago</th>
-                    <th>Banco / Cuenta</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tbodyEmpleados"></tbody>
-        </table>
+        <h3>Empleados Registrados</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Grupo / Puesto</th>
+                        <th>Sueldo Base</th>
+                        <th>Cta / Acredítame</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyEmpleados"></tbody>
+            </table>
+        </div>
     </div>
 
     <!-- MÓDULO 2 -->
     <div id="mod2" class="section">
-        <h2>2. Asistencia e Incidencias</h2>
+        <h2>2. Asistencia y Horas Extras (Período de 14 Días)</h2>
         <div class="form-grid">
             <div class="form-group">
                 <label>Seleccionar Empleado:</label>
                 <select id="selectEmpAsistencia" onchange="cargarEmpleadoAsistencia()"></select>
             </div>
             <div class="form-group">
-                <label>Llegada:</label>
-                <select id="evalLlegada">
-                    <option value="TIEMPO">A TIEMPO</option>
-                    <option value="TARDE">TARDE</option>
-                </select>
+                <label>Total Días Asistidos (Máx 14):</label>
+                <input type="number" id="empDiasAsistidos" value="14" min="0" max="14">
             </div>
             <div class="form-group">
-                <label>Permiso:</label>
-                <select id="evalPermiso">
-                    <option value="NO">NO</option>
-                    <option value="SI">SI</option>
-                </select>
+                <label>Viático Diario (GTQ):</label>
+                <input type="number" id="empViaticoDiario" value="0.00" step="0.01">
             </div>
             <div class="form-group">
-                <label>Horas Extras Catorcenales:</label>
+                <label>Total Horas Extras (Catorcena):</label>
                 <input type="number" id="cantHorasExtras" value="0" step="0.5">
             </div>
         </div>
@@ -204,55 +142,76 @@
 
     <!-- MÓDULO 3 -->
     <div id="mod3" class="section">
-        <h2>3. Cálculo de Nómina Catorcenal</h2>
+        <h2>3. Cálculo de Nómina y Descuentos</h2>
         <div class="form-grid">
             <div class="form-group">
                 <label>Seleccionar Empleado:</label>
                 <select id="selectEmpNomina" onchange="cargarEmpleadoNomina()"></select>
             </div>
             <div class="form-group">
-                <label>Préstamos / Otros Descuentos (GTQ):</label>
+                <label>Pagos Pendientes Anteriores (GTQ):</label>
+                <input type="number" id="inputPendientes" value="0" step="0.01" oninput="calcularNominaActual()">
+            </div>
+            <div class="form-group">
+                <label>Descuento IGSS (GTQ):</label>
+                <input type="number" id="inputIgss" value="0" step="0.01" oninput="calcularNominaActual()">
+            </div>
+            <div class="form-group">
+                <label>Préstamos / Anticipos (GTQ):</label>
                 <input type="number" id="inputPrestamo" value="0" step="0.01" oninput="calcularNominaActual()">
             </div>
         </div>
+        
         <div class="resumen-card">
-            <h3>Desglose del Pago Catorcenal</h3>
-            <p><strong>Sueldo Catorcenal Fijo:</strong> Q <span id="lblBasePeriodo">1,950.00</span></p>
-            <p><strong>Pago Horas Extras:</strong> Q <span id="lblPagoExtras">0.00</span></p>
-            <p class="text-danger"><strong>Descuento Préstamo:</strong> Q -<span id="lblDescuentoPrestamo">0.00</span></p>
+            <h3>Desglose del Pago (Vista Previa)</h3>
+            <p><strong>Días Laborados:</strong> <span id="lblDias">14</span> | <strong>Salario Diario:</strong> Q <span id="lblSalarioDiario">0.00</span></p>
             <hr>
-            <p style="font-size: 1.2rem; color: #16a34a;"><strong>Monto Neto Catorcenal a Pagar:</strong> Q <span id="lblNetoPagar">1,950.00</span></p>
+            <p><strong>Sueldo Base (Proporcional a días):</strong> Q <span id="lblBaseProporcional">0.00</span></p>
+            <p><strong>Bonificación:</strong> Q <span id="lblBonificacion">0.00</span></p>
+            <p><strong>Horas Extras:</strong> Q <span id="lblPagoExtras">0.00</span></p>
+            <p><strong>Viáticos Totales:</strong> Q <span id="lblViaticos">0.00</span></p>
+            <p><strong>Pagos Pendientes Ant.:</strong> Q <span id="lblPendientes">0.00</span></p>
+            <p class="text-danger"><strong>Descuento IGSS:</strong> Q -<span id="lblDescuentoIgss">0.00</span></p>
+            <p class="text-danger"><strong>Descuento Préstamos:</strong> Q -<span id="lblDescuentoPrestamo">0.00</span></p>
+            <hr>
+            <p style="font-size: 1.2rem; color: #16a34a;"><strong>TOTAL LÍQUIDO A RECIBIR: Q <span id="lblNetoPagar">0.00</span></strong></p>
         </div>
     </div>
 
     <!-- MÓDULO 4 -->
     <div id="mod4" class="section">
-        <h2>4. Generación y Vista previa de Boletas Individuales</h2>
+        <h2>4. Generación de Boletas de Pago (PDF)</h2>
         
         <div class="form-grid">
+            <div class="form-group">
+                <label>Rango del Período (Ej. 17/Agosto/2026 - 30/Agosto/2026):</label>
+                <input type="text" id="textoPeriodo" value="17/Agosto/2026 - 30/Agosto/2026" oninput="actualizarTextoPeriodo()">
+            </div>
             <div class="form-group">
                 <label>Seleccionar Empleado para Vista Previa:</label>
                 <select id="selectEmpPdf" onchange="renderizarBoletaIndividual()"></select>
             </div>
         </div>
 
-        <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar PDF de Empleado Seleccionado</button>
-        <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS los Empleados</button>
+        <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta PDF</button>
+        <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS</button>
 
+        <!-- CONTENEDOR PDF (TAMAÑO FIJO) -->
         <div id="areaBoletaPdf" class="boleta-container">
             <div class="boleta-header">
                 <h2>COMPROBANTE DE PAGO CATORCENAL</h2>
-                <p style="margin: 5px 0;"><strong>Período:</strong> <span id="pdfRangoPeriodo">-</span></p>
+                <p style="margin: 5px 0;"><strong>Período:</strong> <span id="pdfRangoPeriodo">17/Agosto/2026 - 30/Agosto/2026</span></p>
             </div>
 
             <div class="boleta-grid">
-                <div><strong>Código/ID:</strong> <span id="bId">-</span></div>
+                <div><strong>No.:</strong> <span id="bId">-</span></div>
                 <div><strong>DPI:</strong> <span id="bDpi">-</span></div>
                 <div><strong>Empleado:</strong> <span id="bNombre">-</span></div>
-                <div><strong>NIT:</strong> <span id="bNit">-</span></div>
-                <div><strong>Puesto:</strong> <span id="bPuesto">-</span></div>
+                <div><strong>Grupo / Actividad:</strong> <span id="bGrupoActividad">-</span></div>
+                <div><strong>Puesto Específico:</strong> <span id="bPuesto">-</span></div>
+                <div><strong>Fecha de Ingreso:</strong> <span id="bIngreso">-</span></div>
                 <div><strong>Forma de Pago:</strong> <span id="bFormaPago">-</span></div>
-                <div><strong>Banco / Cuenta:</strong> <span id="bBancoCuenta">-</span></div>
+                <div><strong>Cuenta / Acredítame:</strong> <span id="bCuentaAcreditame">-</span></div>
             </div>
 
             <table class="boleta-table">
@@ -266,69 +225,75 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Sueldo Catorcenal Fijo</td>
-                        <td style="text-align: right;">Q <span id="bSalarioBase">1,950.00</span></td>
+                        <td>Sueldo Base (<span id="bDias">14</span> días)</td>
+                        <td style="text-align: right;">Q <span id="bSalarioBase">0.00</span></td>
+                        <td>Descuento IGSS</td>
+                        <td style="text-align: right;" class="text-danger">Q <span id="bIgss">0.00</span></td>
+                    </tr>
+                    <tr>
+                        <td>Bonificación</td>
+                        <td style="text-align: right;">Q <span id="bBonificacion">0.00</span></td>
                         <td>Préstamos / Anticipos</td>
                         <td style="text-align: right;" class="text-danger">Q <span id="bPrestamos">0.00</span></td>
                     </tr>
                     <tr>
                         <td>Horas Extras (<span id="bCantHoras">0</span> hrs)</td>
                         <td style="text-align: right;">Q <span id="bHorasExtras">0.00</span></td>
-                        <td>-</td>
-                        <td style="text-align: right;" class="text-danger">Q 0.00</td>
+                        <td></td>
+                        <td></td>
                     </tr>
                     <tr>
-                        <td><strong>Total Ingresos</strong></td>
-                        <td style="text-align: right;"><strong>Q <span id="bTotIngresos">1,950.00</span></strong></td>
-                        <td><strong>Total Descuentos</strong></td>
-                        <td style="text-align: right;" class="text-danger"><strong>Q <span id="bTotDescuentos">0.00</span></strong></td>
+                        <td>Viáticos Totales</td>
+                        <td style="text-align: right;">Q <span id="bViaticos">0.00</span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Pagos Pendientes Anterior</td>
+                        <td style="text-align: right;">Q <span id="bPendientes">0.00</span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td style="background: #f8fafc;"><strong>Total Ingresos Bruto</strong></td>
+                        <td style="text-align: right; background: #f8fafc;"><strong>Q <span id="bTotIngresos">0.00</span></strong></td>
+                        <td style="background: #f8fafc;"><strong>Total Descuentos</strong></td>
+                        <td style="text-align: right; background: #f8fafc;" class="text-danger"><strong>Q <span id="bTotDescuentos">0.00</span></strong></td>
                     </tr>
                 </tbody>
             </table>
 
             <div style="background: #f1f5f9; padding: 12px; border-radius: 4px; text-align: right; font-size: 1.1rem;">
-                <strong>LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">1,950.00</span></strong>
+                <strong>TOTAL LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">0.00</span></strong>
             </div>
 
             <div class="firma-box">
-                <div>
-                    <div class="firma-linea">Elaborado por (Patrono)</div>
-                </div>
-                <div>
-                    <div class="firma-linea">Conforme / Empleado</div>
-                </div>
+                <div><div class="firma-linea">Elaborado por (Patrono)</div></div>
+                <div><div class="firma-linea">Conforme / Empleado</div></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // REEMPLAZA ESTA URL POR TU URL REAL DE GOOGLE APPS SCRIPT
     const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
-
     let empleados = [];
 
     function parseMontoSeguro(val) {
-        if (!val && val !== 0) return 1950;
+        if (!val && val !== 0) return 0;
         if (typeof val === 'number') return val;
-        let str = val.toString().trim().replace(/[^0-9.,]/g, '');
+        let str = val.toString().trim().replace(/[^0-9.,-]/g, '');
         if (str.includes('.') && str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
         else if (str.includes(',')) str = str.replace(',', '.');
         let num = parseFloat(str);
-        return isNaN(num) ? 1950 : num;
+        return isNaN(num) ? 0 : num;
     }
 
     function formatearQ(monto) {
-        return (parseFloat(monto) || 0).toLocaleString('es-GT', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return (parseFloat(monto) || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     window.onload = function() {
-        const hoy = new Date().toISOString().split('T')[0];
-        if (document.getElementById('fechaInicioPeriodo')) document.getElementById('fechaInicioPeriodo').value = hoy;
-        actualizarFechasYPeriodo();
         cargarEmpleadosDesdeSheets();
     };
 
@@ -336,12 +301,10 @@
         const status = document.getElementById('statusCarga');
         if (status) {
             status.innerText = "⏳ Sincronizando con Google Sheets...";
-            status.style.background = "#fef08a";
-            status.style.color = "#854d0e";
+            status.style.background = "#fef08a"; status.style.color = "#854d0e";
         }
 
         const script = document.createElement('script');
-
         window.procesarRespuestaGoogle = function(data) {
             document.body.removeChild(script);
             delete window.procesarRespuestaGoogle;
@@ -358,97 +321,45 @@
                     };
 
                     return {
-                        id: parseInt(getVal(['id'])) || 1,
+                        id: parseInt(getVal(['id', 'no'])) || 1,
                         nombre: getVal(['nombre', 'nombre completo']),
-                        tel: getVal(['tel', 'teléfono', 'telefono']),
-                        correo: getVal(['correo', 'correo electrónico']),
                         dpi: getVal(['dpi']),
-                        nit: getVal(['nit']) || 'C/F',
-                        puesto: getVal(['puesto']),
-                        salario: parseMontoSeguro(getVal(['salario', 'salario base', 'pago catorcenal'])),
+                        fechaIngreso: getVal(['fecha de ingreso', 'fechaingreso']),
+                        grupo: getVal(['grupo']),
+                        puesto: getVal(['puesto especifico', 'puesto']),
+                        presupuesto: getVal(['presupuesto']),
+                        actividad: getVal(['actividad']),
+                        salario: parseMontoSeguro(getVal(['sueldo base', 'salario'])) || 1950,
+                        bonificacion: parseMontoSeguro(getVal(['bonificacion'])) || 0,
                         formaPago: getVal(['formapago', 'forma de pago']) || 'TRANSFERENCIA',
-                        banco: getVal(['banco']),
-                        cuenta: getVal(['cuenta', 'no. cuenta']),
-                        llegada: getVal(['llegada']) || "TIEMPO",
-                        permiso: getVal(['permiso']) || "NO",
-                        horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])) || 0,
-                        prestamo: parseMontoSeguro(getVal(['prestamo', 'préstamo'])) || 0,
-                        neto: 0
+                        cuenta: getVal(['no. cuenta', 'cuenta']),
+                        codigoAcreditame: getVal(['codigo acreditame', 'codigo. acreditame']),
+                        diasAsistidos: parseMontoSeguro(getVal(['dias', 'asistencia'])) || 14,
+                        viaticoDiario: parseMontoSeguro(getVal(['viatico diario', 'viatico'])) || 0,
+                        horasExtras: parseMontoSeguro(getVal(['horas extras', 'horasextras'])) || 0,
+                        pagosPendientes: parseMontoSeguro(getVal(['pagos pendientes', 'pendientes'])) || 0,
+                        igss: parseMontoSeguro(getVal(['igss'])) || 0,
+                        prestamo: parseMontoSeguro(getVal(['descuentos', 'prestamo'])) || 0
                     };
                 });
-
                 renderTablaEmpleados();
-                if (status) {
-                    status.innerText = "✅ Sincronizado con Google Sheets";
-                    status.style.background = "#dcfce7";
-                    status.style.color = "#15803d";
-                }
+                if (status) { status.innerText = "✅ Sincronizado"; status.style.background = "#dcfce7"; status.style.color = "#15803d"; }
             } else {
                 empleados = [];
                 renderTablaEmpleados();
-                if (status) {
-                    status.innerText = "ℹ️ Conectado. No hay empleados registrados en Google Sheets.";
-                    status.style.background = "#eff6ff";
-                    status.style.color = "#1e40af";
-                }
+                if (status) { status.innerText = "ℹ️ Conectado. Sin empleados en Sheets."; status.style.background = "#eff6ff"; status.style.color = "#1e40af"; }
             }
         };
-
         script.onerror = function() {
-            if (status) {
-                status.innerText = "⚠️ Error de conexión con Google Sheets. Verifica tu URL_API.";
-                status.style.background = "#fee2e2";
-                status.style.color = "#991b1b";
-            }
+            if (status) { status.innerText = "⚠️ Error de conexión"; status.style.background = "#fee2e2"; status.style.color = "#991b1b"; }
         };
-
         script.src = URL_API + (URL_API.includes('?') ? '&' : '?') + 'prefix=procesarRespuestaGoogle';
         document.body.appendChild(script);
-    }
-
-    function enviarDatosAGoogle(params) {
-        const formData = new URLSearchParams();
-        for (let key in params) {
-            formData.append(key, params[key]);
-        }
-
-        fetch(URL_API, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        }).then(() => {
-            console.log("Datos sincronizados con Google Sheets.");
-        }).catch(err => {
-            console.error("Error enviando datos:", err);
-        });
-    }
-
-    function actualizarFechasYPeriodo() {
-        const fechaInicioInput = document.getElementById('fechaInicioPeriodo');
-        if (fechaInicioInput && fechaInicioInput.value) {
-            const fInicio = new Date(fechaInicioInput.value + 'T00:00:00');
-            const fFin = new Date(fInicio);
-            fFin.setDate(fFin.getDate() + 13);
-
-            const fFinStr = fFin.toISOString().split('T')[0];
-            if (document.getElementById('fechaFinPeriodo')) document.getElementById('fechaFinPeriodo').value = fFinStr;
-
-            const opciones = { day: '2-digit', month: 'short', year: 'numeric' };
-            const txtRango = `${fInicio.toLocaleDateString('es-GT', opciones)} al ${fFin.toLocaleDateString('es-GT', opciones)}`;
-            if (document.getElementById('lblRangoPeriodo')) document.getElementById('lblRangoPeriodo').innerText = txtRango;
-            if (document.getElementById('pdfRangoPeriodo')) document.getElementById('pdfRangoPeriodo').innerText = txtRango;
-        }
-
-        if (document.getElementById('selectEmpNomina') && document.getElementById('selectEmpNomina').value) {
-            calcularNominaActual();
-        }
     }
 
     function switchTab(tabId) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
         document.getElementById(tabId).classList.add('active');
         document.getElementById('btn-' + tabId).classList.add('active');
 
@@ -460,68 +371,40 @@
     function agregarEmpleado() {
         const nombre = document.getElementById('empNombre').value.trim();
         const salario = parseMontoSeguro(document.getElementById('empSalario').value);
-
-        if (!nombre || salario <= 0) {
-            alert("Por favor ingrese al menos un Nombre.");
-            return;
-        }
+        if (!nombre || salario <= 0) return alert("Por favor ingrese al menos un Nombre y Sueldo.");
 
         const nuevoEmp = {
             id: empleados.length ? Math.max(...empleados.map(e => e.id)) + 1 : 1,
             nombre: nombre,
-            tel: document.getElementById('empTel').value.trim(),
-            correo: document.getElementById('empCorreo').value.trim() || 'No registrado',
             dpi: document.getElementById('empDpi').value.trim(),
-            nit: document.getElementById('empNit').value.trim() || 'C/F',
+            fechaIngreso: document.getElementById('empFechaIngreso').value,
+            grupo: document.getElementById('empGrupo').value.trim(),
             puesto: document.getElementById('empPuesto').value.trim(),
+            presupuesto: document.getElementById('empPresupuesto').value.trim(),
+            actividad: document.getElementById('empActividad').value.trim(),
             salario: salario,
+            bonificacion: parseMontoSeguro(document.getElementById('empBonificacion').value),
             formaPago: document.getElementById('empFormaPago').value,
-            banco: document.getElementById('empBanco').value,
             cuenta: document.getElementById('empNumCuenta').value.trim(),
-            llegada: "TIEMPO",
-            permiso: "NO",
+            codigoAcreditame: document.getElementById('empCodigoAcreditame').value.trim(),
+            diasAsistidos: 14,
+            viaticoDiario: 0,
             horasExtras: 0,
+            pagosPendientes: 0,
+            igss: 0,
             prestamo: 0
         };
 
         empleados.push(nuevoEmp);
         renderTablaEmpleados();
-
-        enviarDatosAGoogle({
-            action: "guardarEmpleado",
-            ...nuevoEmp
-        });
-
-        document.getElementById('empNombre').value = '';
-        document.getElementById('empTel').value = '';
-        document.getElementById('empCorreo').value = '';
-        document.getElementById('empDpi').value = '';
-        document.getElementById('empNit').value = '';
-        document.getElementById('empPuesto').value = '';
-        document.getElementById('empSalario').value = '1950.00';
-        document.getElementById('empBanco').value = '';
-        document.getElementById('empNumCuenta').value = '';
-
-        alert(`✅ Empleado "${nombre}" registrado con pago de Q ${formatearQ(salario)} por catorcena.`);
-    }
-
-    function eliminarEmpleado(id) {
-        const emp = empleados.find(e => e.id === id);
-        if (!emp) return;
-
-        if (confirm(`¿Eliminar a "${emp.nombre}" de la hoja de cálculo?`)) {
-            empleados = empleados.filter(e => e.id !== id);
-            renderTablaEmpleados();
-            enviarDatosAGoogle({ action: "eliminarEmpleado", id: id });
-            alert(`🗑️ Empleado eliminado.`);
-        }
+        alert(`✅ Empleado "${nombre}" registrado.`);
+        // Aquí puedes llamar a enviarDatosAGoogle si está configurado en tu script
     }
 
     function renderTablaEmpleados() {
         const tbody = document.getElementById('tbodyEmpleados');
         if (!tbody) return;
         tbody.innerHTML = '';
-
         const selAsis = document.getElementById('selectEmpAsistencia');
         const selNom = document.getElementById('selectEmpNomina');
         const selPdf = document.getElementById('selectEmpPdf');
@@ -534,23 +417,17 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${e.id}</td>
-                <td>
-                    <strong>${e.nombre}</strong>
-                    <button class="btn-pdf-sm" onclick="descargarPDFPorId(${e.id})" title="Descargar Boleta de Pago en PDF">📄 PDF</button>
-                </td>
-                <td>${e.puesto || '-'}</td>
+                <td><strong>${e.nombre}</strong></td>
+                <td>${e.grupo || '-'}<br><small>${e.puesto || '-'}</small></td>
                 <td>Q ${formatearQ(e.salario)}</td>
-                <td>${e.formaPago}</td>
-                <td>${e.banco || '-'} ${e.cuenta ? '(' + e.cuenta + ')' : ''}</td>
-                <td>
-                    <button class="btn-sec" onclick="eliminarEmpleado(${e.id})">Eliminar</button>
-                </td>
+                <td>${e.cuenta || '-'}<br><small>Cod: ${e.codigoAcreditame || '-'}</small></td>
+                <td><button class="btn-pdf-sm" onclick="descargarPDFPorId(${e.id})">📄 PDF</button></td>
             `;
             tbody.appendChild(tr);
 
-            if (selAsis) selAsis.innerHTML += `<option value="${e.id}">${e.nombre} - ${e.puesto}</option>`;
-            if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre} - Q ${formatearQ(e.salario)} / Catorcena</option>`;
-            if (selPdf) selPdf.innerHTML += `<option value="${e.id}">${e.nombre} - ${e.puesto}</option>`;
+            if (selAsis) selAsis.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            if (selPdf) selPdf.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
         });
     }
 
@@ -559,33 +436,21 @@
         if (!select || !select.value) return;
         const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
-
-        document.getElementById('evalLlegada').value = emp.llegada || "TIEMPO";
-        document.getElementById('evalPermiso').value = emp.permiso || "NO";
+        document.getElementById('empDiasAsistidos').value = emp.diasAsistidos || 14;
+        document.getElementById('empViaticoDiario').value = emp.viaticoDiario || 0;
         document.getElementById('cantHorasExtras').value = emp.horasExtras || 0;
     }
 
     function guardarAsistencia() {
         const select = document.getElementById('selectEmpAsistencia');
         if (!select || !select.value) return alert("Seleccione un empleado.");
-
-        const id = parseInt(select.value);
-        const emp = empleados.find(e => e.id === id);
+        const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
-        emp.llegada = document.getElementById('evalLlegada').value;
-        emp.permiso = document.getElementById('evalPermiso').value;
+        emp.diasAsistidos = parseInt(document.getElementById('empDiasAsistidos').value) || 0;
+        emp.viaticoDiario = parseMontoSeguro(document.getElementById('empViaticoDiario').value);
         emp.horasExtras = parseMontoSeguro(document.getElementById('cantHorasExtras').value);
-
-        enviarDatosAGoogle({
-            action: "guardarAsistencia",
-            id: id,
-            llegada: emp.llegada,
-            permiso: emp.permiso,
-            horasExtras: emp.horasExtras
-        });
-
-        alert(`✅ Asistencia actualizada para ${emp.nombre}`);
+        alert(`✅ Asistencia y viáticos guardados para ${emp.nombre}`);
     }
 
     function cargarEmpleadoNomina() {
@@ -594,6 +459,8 @@
         const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
+        document.getElementById('inputPendientes').value = emp.pagosPendientes || 0;
+        document.getElementById('inputIgss').value = emp.igss || 0;
         document.getElementById('inputPrestamo').value = emp.prestamo || 0;
         calcularNominaActual();
     }
@@ -604,85 +471,94 @@
         const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
+        emp.pagosPendientes = parseMontoSeguro(document.getElementById('inputPendientes').value);
+        emp.igss = parseMontoSeguro(document.getElementById('inputIgss').value);
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
-        const sueldoCatorcenal = parseMontoSeguro(emp.salario);
-        const pagoDiario = sueldoCatorcenal / 14;
+        const pagoDiario = emp.salario / 14;
+        const sueldoProporcional = pagoDiario * (emp.diasAsistidos || 14);
         const valorHoraExtra = (pagoDiario / 8) * 1.5;
         const pagoExtras = (emp.horasExtras || 0) * valorHoraExtra;
+        const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos || 14);
 
-        const neto = sueldoCatorcenal + pagoExtras - emp.prestamo;
-        emp.neto = neto > 0 ? neto : 0;
+        const totIngresos = sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + emp.pagosPendientes;
+        const totDescuentos = emp.prestamo + emp.igss;
+        const neto = totIngresos - totDescuentos;
 
-        document.getElementById('lblBasePeriodo').innerText = formatearQ(sueldoCatorcenal);
+        document.getElementById('lblDias').innerText = emp.diasAsistidos || 14;
+        document.getElementById('lblSalarioDiario').innerText = formatearQ(pagoDiario);
+        document.getElementById('lblBaseProporcional').innerText = formatearQ(sueldoProporcional);
+        document.getElementById('lblBonificacion').innerText = formatearQ(emp.bonificacion);
         document.getElementById('lblPagoExtras').innerText = formatearQ(pagoExtras);
+        document.getElementById('lblViaticos').innerText = formatearQ(totViaticos);
+        document.getElementById('lblPendientes').innerText = formatearQ(emp.pagosPendientes);
+        document.getElementById('lblDescuentoIgss').innerText = formatearQ(emp.igss);
         document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
-        document.getElementById('lblNetoPagar').innerText = formatearQ(emp.neto);
+        document.getElementById('lblNetoPagar').innerText = formatearQ(neto > 0 ? neto : 0);
+    }
+
+    function actualizarTextoPeriodo() {
+        const txt = document.getElementById('textoPeriodo').value;
+        document.getElementById('pdfRangoPeriodo').innerText = txt;
     }
 
     function renderizarBoletaIndividual(empId) {
         const select = document.getElementById('selectEmpPdf');
         let id = empId || (select ? parseInt(select.value) : null);
-
-        if (!id && empleados.length > 0) {
-            id = empleados[0].id;
-            if (select) select.value = id;
-        }
+        if (!id && empleados.length > 0) id = empleados[0].id;
+        if (!id) return;
+        if (select && !empId) select.value = id;
 
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
 
-        const sueldoCatorcenal = parseMontoSeguro(emp.salario);
-        const pagoDiario = sueldoCatorcenal / 14;
-        const valorHoraExtra = (pagoDiario / 8) * 1.5;
-        const pagoExtras = (emp.horasExtras || 0) * valorHoraExtra;
+        const pagoDiario = emp.salario / 14;
+        const sueldoProporcional = pagoDiario * (emp.diasAsistidos || 14);
+        const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
+        const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos || 14);
 
-        const totIngresos = sueldoCatorcenal + pagoExtras;
-        const totDescuentos = emp.prestamo || 0;
+        const totIngresos = sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + (emp.pagosPendientes||0);
+        const totDescuentos = (emp.prestamo||0) + (emp.igss||0);
         const neto = totIngresos - totDescuentos;
 
         document.getElementById('bId').innerText = emp.id;
         document.getElementById('bNombre').innerText = emp.nombre;
-        document.getElementById('bDpi').innerText = emp.dpi || 'N/A';
-        document.getElementById('bNit').innerText = emp.nit || 'C/F';
-        document.getElementById('bPuesto').innerText = emp.puesto || 'N/A';
-        document.getElementById('bFormaPago').innerText = emp.formaPago || 'TRANSFERENCIA';
-        document.getElementById('bBancoCuenta').innerText = `${emp.banco || ''} ${emp.cuenta ? '(' + emp.cuenta + ')' : ''}`;
+        document.getElementById('bDpi').innerText = emp.dpi || '-';
+        document.getElementById('bGrupoActividad').innerText = `${emp.grupo || ''} / ${emp.actividad || ''}`;
+        document.getElementById('bPuesto').innerText = emp.puesto || '-';
+        document.getElementById('bIngreso').innerText = emp.fechaIngreso || '-';
+        document.getElementById('bFormaPago').innerText = emp.formaPago || '-';
+        document.getElementById('bCuentaAcreditame').innerText = `Cta: ${emp.cuenta || '-'} | Cód: ${emp.codigoAcreditame || '-'}`;
 
-        document.getElementById('bSalarioBase').innerText = formatearQ(sueldoCatorcenal);
+        document.getElementById('bDias').innerText = emp.diasAsistidos || 14;
+        document.getElementById('bSalarioBase').innerText = formatearQ(sueldoProporcional);
+        document.getElementById('bBonificacion').innerText = formatearQ(emp.bonificacion);
         document.getElementById('bCantHoras').innerText = emp.horasExtras || 0;
         document.getElementById('bHorasExtras').innerText = formatearQ(pagoExtras);
-        document.getElementById('bPrestamos').innerText = formatearQ(emp.prestamo || 0);
+        document.getElementById('bViaticos').innerText = formatearQ(totViaticos);
+        document.getElementById('bPendientes').innerText = formatearQ(emp.pagosPendientes);
+
+        document.getElementById('bIgss').innerText = formatearQ(emp.igss);
+        document.getElementById('bPrestamos').innerText = formatearQ(emp.prestamo);
 
         document.getElementById('bTotIngresos').innerText = formatearQ(totIngresos);
         document.getElementById('bTotDescuentos').innerText = formatearQ(totDescuentos);
         document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
     }
 
-    // --- FUNCIONES DE DESCARGA PDF CORREGIDAS Y ENCUADRADAS ---
     function descargarPDFPorId(id) {
         renderizarBoletaIndividual(id);
         const emp = empleados.find(e => e.id === id);
         if (!emp) return;
 
         const elemento = document.getElementById('areaBoletaPdf');
-        const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
-
+        const nombreArchivo = `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
         const opciones = {
-            margin: [8, 8, 8, 8],
-            filename: nombreArchivo,
+            margin: [10, 10, 10, 10], filename: nombreArchivo,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                scrollY: 0,
-                scrollX: 0,
-                width: 750,
-                windowWidth: 800
-            },
+            html2canvas: { scale: 2, useCORS: true, width: 700, windowWidth: 700 },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
-
         html2pdf().set(opciones).from(elemento).save();
     }
 
@@ -693,32 +569,19 @@
     }
 
     async function descargarTodosLosPDFs() {
-        if (!empleados.length) return alert("No hay empleados registrados.");
-
+        if (!empleados.length) return alert("No hay empleados.");
         for (let emp of empleados) {
             renderizarBoletaIndividual(emp.id);
             const elemento = document.getElementById('areaBoletaPdf');
-            const nombreArchivo = `Boleta_Pago_${emp.nombre.replace(/\s+/g, '_')}.pdf`;
-
             const opciones = {
-                margin: [8, 8, 8, 8],
-                filename: nombreArchivo,
+                margin: [10, 10, 10, 10], filename: `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    scrollY: 0,
-                    scrollX: 0,
-                    width: 750,
-                    windowWidth: 800
-                },
+                html2canvas: { scale: 2, useCORS: true, width: 700, windowWidth: 700 },
                 jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
             };
-
             await html2pdf().set(opciones).from(elemento).save();
         }
     }
 </script>
-
 </body>
 </html>
