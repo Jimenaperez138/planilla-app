@@ -31,18 +31,19 @@
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .text-danger { color: #dc2626; }
 
-        /* Estilos para el Reporte Consolidado en Tabla Global */
+        /* Estilos optimizados para el PDF horizontal de 1 sola página */
         .reporte-hoja-unica {
             background: #ffffff;
-            padding: 15px;
+            padding: 10px;
             font-family: Arial, sans-serif;
             width: 100%;
             box-sizing: border-box;
         }
-        .reporte-hoja-unica h2 { text-align: center; margin: 0 0 5px 0; font-size: 1.2rem; border: none; }
-        .reporte-hoja-unica p { text-align: center; margin: 0 0 15px 0; font-size: 0.85rem; }
-        .tabla-hoja-unica { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
-        .tabla-hoja-unica th, .tabla-hoja-unica td { border: 1px solid #64748b; padding: 5px 6px; text-align: center; }
+        .reporte-hoja-unica h2 { text-align: center; margin: 0 0 5px 0; font-size: 1.1rem; border: none; }
+        .reporte-hoja-unica h3 { text-align: center; margin: 0 0 5px 0; font-size: 0.95rem; border: none; color: #2563eb; }
+        .reporte-hoja-unica p { text-align: center; margin: 0 0 10px 0; font-size: 0.8rem; }
+        .tabla-hoja-unica { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+        .tabla-hoja-unica th, .tabla-hoja-unica td { border: 1px solid #64748b; padding: 4px 5px; text-align: center; }
         .tabla-hoja-unica th { background: #e2e8f0; font-weight: bold; color: #1e293b; }
         .tabla-hoja-unica td.text-left { text-align: left; }
         .tabla-hoja-unica td.text-right { text-align: right; }
@@ -177,6 +178,10 @@
         
         <div class="form-grid">
             <div class="form-group">
+                <label>Número / Identificador de Planilla:*</label>
+                <input type="text" id="numeroPlanilla" value="Planilla No. 18 - Primera Quincena" placeholder="Ej: Planilla No. 18 - Septiembre" oninput="actualizarTextoPeriodo()">
+            </div>
+            <div class="form-group">
                 <label>Rango del Período:</label>
                 <input type="text" id="textoPeriodo" value="17/Agosto/2026 - 30/Agosto/2026" oninput="actualizarTextoPeriodo()">
             </div>
@@ -187,6 +192,7 @@
         <h3>Vista Previa del Resumen General</h3>
         <div id="areaPlanillaHojaUnica" class="reporte-hoja-unica">
             <h2>REPORTE GENERAL DE PLANILLA CATORCENAL</h2>
+            <h3 id="lblPlanillaHeader">Planilla No. 18 - Primera Quincena</h3>
             <p><strong>Período:</strong> <span class="lblRangoGeneral">17/Agosto/2026 - 30/Agosto/2026</span></p>
             
             <table class="tabla-hoja-unica">
@@ -215,7 +221,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyJ8Uq6i6E7WK3YfHSt583nOkx6zGu06TPIDE0tI1EdAnpCHT9o6pQat5v6LqfETVojvg/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbyRTDhjfkiqkORc1OhmGrsCtZInqENZR_PgvVW49XMxM2IWeJ74YCIR3AEumXfR9sFJPA/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -278,7 +284,8 @@
                         horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])),
                         pagosPendientes: parseMontoSeguro(getVal(['pendientes', 'pagos pendientes'])),
                         igss: parseMontoSeguro(getVal(['igss'])),
-                        prestamo: parseMontoSeguro(getVal(['prestamo', 'descuentos']))
+                        prestamo: parseMontoSeguro(getVal(['prestamo', 'descuentos'])),
+                        numeroPlanilla: getVal(['numeroplanilla', 'numero planilla']) || ''
                     };
                 });
                 renderTablaEmpleados();
@@ -312,6 +319,8 @@
     function agregarEmpleado() {
         const nombre = document.getElementById('empNombre').value.trim();
         const salario = parseMontoSeguro(document.getElementById('empSalario').value);
+        const numPlanilla = document.getElementById('numeroPlanilla').value.trim();
+
         if (!nombre || salario <= 0) return alert("Por favor ingrese al menos un Nombre y Sueldo.");
 
         const nuevoEmp = {
@@ -333,7 +342,8 @@
             viaticoDiario: 0,
             horasExtras: 0,
             pagosPendientes: 0,
-            prestamo: 0
+            prestamo: 0,
+            numeroPlanilla: numPlanilla
         };
 
         fetch(URL_API, {
@@ -475,12 +485,16 @@
     }
 
     function actualizarTextoPeriodo() {
-        const txt = document.getElementById('textoPeriodo').value;
-        document.querySelectorAll('.lblRangoGeneral').forEach(e => e.innerText = txt);
+        const txtPeriodo = document.getElementById('textoPeriodo').value;
+        const txtPlanilla = document.getElementById('numeroPlanilla').value;
+
+        document.querySelectorAll('.lblRangoGeneral').forEach(e => e.innerText = txtPeriodo);
+        const lblPlanilla = document.getElementById('lblPlanillaHeader');
+        if (lblPlanilla) lblPlanilla.innerText = txtPlanilla.trim() ? txtPlanilla : "Planilla Sin Especificar";
     }
 
-    // RENDERIZAR TABLA CONSOLIDADA GENERAL CON TODOS LOS EMPLEADOS JUNTOS
     function renderTablaHojaUnica() {
+        actualizarTextoPeriodo();
         const tbody = document.getElementById('tbodyPlanillaHojaUnica');
         if (!tbody) return;
         tbody.innerHTML = '';
@@ -525,7 +539,7 @@
             tbody.appendChild(tr);
         });
 
-        // Fila de Totales
+        // Fila de Totales Generales
         const trTot = document.createElement('tr');
         trTot.style.background = '#f1f5f9';
         trTot.style.fontWeight = 'bold';
@@ -543,16 +557,20 @@
         tbody.appendChild(trTot);
     }
 
-    // DESCARGAR PLANILLA GENERAL CONSOLIDADA EN PDF HORIZONTAL
     function descargarPlanillaGeneralUnaHoja() {
         if (empleados.length === 0) return alert("No hay empleados registrados para generar la planilla.");
 
+        const numPlanilla = document.getElementById('numeroPlanilla').value.trim();
+        const nombreArchivo = numPlanilla ? `Planilla_${numPlanilla.replace(/[^a-zA-Z0-9]/g, '_')}.pdf` : `Planilla_General_Consolidada.pdf`;
+
         const element = document.getElementById('areaPlanillaHojaUnica');
+        
+        // Ajustes de márgenes reducidos (4mm) para evitar desbordes en PDF
         const opt = {
-            margin:       [8, 8, 8, 8],
-            filename:     `Planilla_General_Consolidada.pdf`,
+            margin:       [4, 4, 4, 4],
+            filename:     nombreArchivo,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
+            html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
             jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
         };
 
