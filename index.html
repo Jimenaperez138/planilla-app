@@ -20,10 +20,10 @@
         .form-group input, .form-group select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
         .btn-main { background: #16a34a; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-main:hover { background: #15803d; }
-        .btn-sec { background: #dc2626; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-sec:hover { background: #b91c1c; }
-        .btn-pdf-sm { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 8px; }
+        .btn-pdf-sm { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-right: 4px; }
         .btn-pdf-sm:hover { background: #1d4ed8; }
+        .btn-del-sm { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .btn-del-sm:hover { background: #b91c1c; }
         .btn-pdf { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
         .btn-pdf:hover { background: #1d4ed8; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
@@ -33,7 +33,7 @@
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .text-danger { color: #dc2626; }
 
-        /* Estilos de Boleta Individual Ajustados */
+        /* Estilos de Boleta Individual (Tamaño Fijo 700px) */
         .boleta-container {
             background: #ffffff;
             border: 2px solid #334155;
@@ -72,7 +72,7 @@
         <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Boletas Individuales</button>
     </div>
 
-    <!-- MÓDULO 1 -->
+    <!-- MÓDULO 1: REGISTRO DE EMPLEADOS -->
     <div id="mod1" class="section active">
         <h2>1. Registro de Empleados</h2>
         <div class="form-grid">
@@ -84,7 +84,6 @@
             <div class="form-group"><label>Presupuesto:</label><input type="text" id="empPresupuesto" placeholder="Ej: VICLZ"></div>
             <div class="form-group"><label>Actividad:</label><input type="text" id="empActividad" placeholder="Ej: VIVERO CALZA"></div>
             <div class="form-group"><label>Sueldo Catorcenal Fijo (GTQ):*</label><input type="number" id="empSalario" value="1950.00" step="0.01"></div>
-            <div class="form-group"><label>Bonificación (GTQ):</label><input type="number" id="empBonificacion" value="0.00" step="0.01"></div>
             <div class="form-group">
                 <label>Forma de Pago:</label>
                 <select id="empFormaPago">
@@ -116,7 +115,7 @@
         </div>
     </div>
 
-    <!-- MÓDULO 2 -->
+    <!-- MÓDULO 2: ASISTENCIA -->
     <div id="mod2" class="section">
         <h2>2. Asistencia y Horas Extras (Período de 14 Días)</h2>
         <div class="form-grid">
@@ -140,7 +139,7 @@
         <button class="btn-main" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
     </div>
 
-    <!-- MÓDULO 3 -->
+    <!-- MÓDULO 3: CÁLCULO DE NÓMINA -->
     <div id="mod3" class="section">
         <h2>3. Cálculo de Nómina y Descuentos</h2>
         <div class="form-grid">
@@ -149,16 +148,20 @@
                 <select id="selectEmpNomina" onchange="cargarEmpleadoNomina()"></select>
             </div>
             <div class="form-group">
-                <label>Pagos Pendientes Anteriores (GTQ):</label>
-                <input type="number" id="inputPendientes" value="0" step="0.01" oninput="calcularNominaActual()">
+                <label>Bonificación (GTQ):</label>
+                <input type="number" id="inputBonificacion" value="0.00" step="0.01" oninput="calcularNominaActual()">
             </div>
             <div class="form-group">
                 <label>Descuento IGSS (GTQ):</label>
-                <input type="number" id="inputIgss" value="0" step="0.01" oninput="calcularNominaActual()">
+                <input type="number" id="inputIgss" value="0.00" step="0.01" oninput="calcularNominaActual()">
+            </div>
+            <div class="form-group">
+                <label>Pagos Pendientes Anteriores (GTQ):</label>
+                <input type="number" id="inputPendientes" value="0.00" step="0.01" oninput="calcularNominaActual()">
             </div>
             <div class="form-group">
                 <label>Préstamos / Anticipos (GTQ):</label>
-                <input type="number" id="inputPrestamo" value="0" step="0.01" oninput="calcularNominaActual()">
+                <input type="number" id="inputPrestamo" value="0.00" step="0.01" oninput="calcularNominaActual()">
             </div>
         </div>
         
@@ -178,7 +181,7 @@
         </div>
     </div>
 
-    <!-- MÓDULO 4 -->
+    <!-- MÓDULO 4: BOLETAS PDF -->
     <div id="mod4" class="section">
         <h2>4. Generación de Boletas de Pago (PDF)</h2>
         
@@ -196,7 +199,7 @@
         <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta PDF</button>
         <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS</button>
 
-        <!-- CONTENEDOR PDF (TAMAÑO FIJO) -->
+        <!-- CONTENEDOR PDF -->
         <div id="areaBoletaPdf" class="boleta-container">
             <div class="boleta-header">
                 <h2>COMPROBANTE DE PAGO CATORCENAL</h2>
@@ -276,7 +279,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbxJmGg7Qfj7ATI6y8iFrIxWLl5i1TFp9vnN3vhiiWvhs7TBx19EuLEiKgzrt5QdIGIbRA/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbwjB3J1JznIxkSNVOXzpWsVzuGZ_Ln2kXmyanU8JeCU-nagamviTqRyNcau4lZyMaczUg/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -324,22 +327,22 @@
                         id: parseInt(getVal(['id', 'no'])) || 1,
                         nombre: getVal(['nombre', 'nombre completo']),
                         dpi: getVal(['dpi']),
-                        fechaIngreso: getVal(['fecha de ingreso', 'fechaingreso']),
+                        fechaIngreso: getVal(['fechaingreso', 'fecha de ingreso']),
                         grupo: getVal(['grupo']),
-                        puesto: getVal(['puesto especifico', 'puesto']),
+                        puesto: getVal(['puesto', 'puesto especifico']),
                         presupuesto: getVal(['presupuesto']),
                         actividad: getVal(['actividad']),
-                        salario: parseMontoSeguro(getVal(['sueldo base', 'salario'])) || 1950,
-                        bonificacion: parseMontoSeguro(getVal(['bonificacion'])) || 0,
+                        salario: parseMontoSeguro(getVal(['salario', 'sueldo base'])) || 1950,
+                        bonificacion: parseMontoSeguro(getVal(['bonificacion'])),
                         formaPago: getVal(['formapago', 'forma de pago']) || 'TRANSFERENCIA',
-                        cuenta: getVal(['no. cuenta', 'cuenta']),
-                        codigoAcreditame: getVal(['codigo acreditame', 'codigo. acreditame']),
+                        cuenta: getVal(['cuenta', 'no. cuenta']),
+                        codigoAcreditame: getVal(['codigoacreditame', 'codigo. acreditame']),
                         diasAsistidos: parseMontoSeguro(getVal(['dias', 'asistencia'])) || 14,
-                        viaticoDiario: parseMontoSeguro(getVal(['viatico diario', 'viatico'])) || 0,
-                        horasExtras: parseMontoSeguro(getVal(['horas extras', 'horasextras'])) || 0,
-                        pagosPendientes: parseMontoSeguro(getVal(['pagos pendientes', 'pendientes'])) || 0,
-                        igss: parseMontoSeguro(getVal(['igss'])) || 0,
-                        prestamo: parseMontoSeguro(getVal(['descuentos', 'prestamo'])) || 0
+                        viaticoDiario: parseMontoSeguro(getVal(['viatico', 'viatico diario'])),
+                        horasExtras: parseMontoSeguro(getVal(['horasextras', 'horas extras'])),
+                        pagosPendientes: parseMontoSeguro(getVal(['pendientes', 'pagos pendientes'])),
+                        igss: parseMontoSeguro(getVal(['igss'])),
+                        prestamo: parseMontoSeguro(getVal(['prestamo', 'descuentos']))
                     };
                 });
                 renderTablaEmpleados();
@@ -383,7 +386,8 @@
             presupuesto: document.getElementById('empPresupuesto').value.trim(),
             actividad: document.getElementById('empActividad').value.trim(),
             salario: salario,
-            bonificacion: parseMontoSeguro(document.getElementById('empBonificacion').value),
+            bonificacion: 0,
+            igss: 0,
             formaPago: document.getElementById('empFormaPago').value,
             cuenta: document.getElementById('empNumCuenta').value.trim(),
             codigoAcreditame: document.getElementById('empCodigoAcreditame').value.trim(),
@@ -391,14 +395,23 @@
             viaticoDiario: 0,
             horasExtras: 0,
             pagosPendientes: 0,
-            igss: 0,
             prestamo: 0
         };
 
-        empleados.push(nuevoEmp);
-        renderTablaEmpleados();
-        alert(`✅ Empleado "${nombre}" registrado.`);
-        // Aquí puedes llamar a enviarDatosAGoogle si está configurado en tu script
+        // Guardar en Google Sheets
+        fetch(URL_API, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accion: "guardarEmpleado", empleado: nuevoEmp })
+        }).then(() => {
+            empleados.push(nuevoEmp);
+            renderTablaEmpleados();
+            alert(`✅ Empleado "${nombre}" guardado con éxito.`);
+        }).catch(err => {
+            console.error(err);
+            alert("⚠️ Hubo un error al guardar en Google Sheets.");
+        });
     }
 
     function renderTablaEmpleados() {
@@ -421,7 +434,10 @@
                 <td>${e.grupo || '-'}<br><small>${e.puesto || '-'}</small></td>
                 <td>Q ${formatearQ(e.salario)}</td>
                 <td>${e.cuenta || '-'}<br><small>Cod: ${e.codigoAcreditame || '-'}</small></td>
-                <td><button class="btn-pdf-sm" onclick="descargarPDFPorId(${e.id})">📄 PDF</button></td>
+                <td>
+                    <button class="btn-pdf-sm" onclick="descargarPDFPorId(${e.id})">📄 PDF</button>
+                    <button class="btn-del-sm" onclick="eliminarEmpleado(${e.id})">🗑️ Eliminar</button>
+                </td>
             `;
             tbody.appendChild(tr);
 
@@ -429,6 +445,27 @@
             if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
             if (selPdf) selPdf.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
         });
+    }
+
+    function eliminarEmpleado(id) {
+        const emp = empleados.find(e => e.id === id);
+        if (!emp) return;
+        
+        if (confirm(`¿Estás seguro de que deseas eliminar a "${emp.nombre}"?`)) {
+            fetch(URL_API, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ accion: "eliminarEmpleado", id: id })
+            }).then(() => {
+                empleados = empleados.filter(e => e.id !== id);
+                renderTablaEmpleados();
+                alert(`🗑️ Empleado "${emp.nombre}" eliminado correctamente.`);
+            }).catch(err => {
+                console.error(err);
+                alert("⚠️ Hubo un problema al borrar en la nube.");
+            });
+        }
     }
 
     function cargarEmpleadoAsistencia() {
@@ -459,8 +496,9 @@
         const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
-        document.getElementById('inputPendientes').value = emp.pagosPendientes || 0;
+        document.getElementById('inputBonificacion').value = emp.bonificacion || 0;
         document.getElementById('inputIgss').value = emp.igss || 0;
+        document.getElementById('inputPendientes').value = emp.pagosPendientes || 0;
         document.getElementById('inputPrestamo').value = emp.prestamo || 0;
         calcularNominaActual();
     }
@@ -471,8 +509,9 @@
         const emp = empleados.find(e => e.id === parseInt(select.value));
         if (!emp) return;
 
-        emp.pagosPendientes = parseMontoSeguro(document.getElementById('inputPendientes').value);
+        emp.bonificacion = parseMontoSeguro(document.getElementById('inputBonificacion').value);
         emp.igss = parseMontoSeguro(document.getElementById('inputIgss').value);
+        emp.pagosPendientes = parseMontoSeguro(document.getElementById('inputPendientes').value);
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
         const pagoDiario = emp.salario / 14;
@@ -481,7 +520,7 @@
         const pagoExtras = (emp.horasExtras || 0) * valorHoraExtra;
         const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos || 14);
 
-        const totIngresos = sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + emp.pagosPendientes;
+        const totIngresos = sueldoProporcional + emp.bonificacion + pagoExtras + totViaticos + emp.pagosPendientes;
         const totDescuentos = emp.prestamo + emp.igss;
         const neto = totIngresos - totDescuentos;
 
