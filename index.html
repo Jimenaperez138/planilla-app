@@ -1,4 +1,4 @@
-         <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -196,7 +196,7 @@
             </div>
         </div>
 
-        <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta PDF</button>
+        <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta Mostrada</button>
         <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS</button>
 
         <!-- CONTENEDOR PDF -->
@@ -279,7 +279,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbx1xZl2lj_KQQs2VS7aKhV2nvOp93Kg01GtUwxpVs-4pb078lujEhJ2lwKHP3urXkqwaA/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbzVnXSfxi3Cvkl5SITrLWi8jaRdX0mkOagABhm-p0HGK-A9as4iF4NbS4MmKaYj8GURtw/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -607,19 +607,71 @@
 
     async function descargarTodosLosPDFs() {
         if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
-        switchTab('mod4');
-        for (const emp of empleados) {
-            renderizarBoletaIndividual(emp.id);
-            await new Promise(r => setTimeout(r, 500));
-            const element = document.getElementById('areaBoletaPdf');
+
+        const opcion = confirm(
+            "¿Cómo deseas descargar las boletas?\n\n" +
+            "• Haz clic en 'Aceptar' para un SOLO PDF con todos los empleados.\n" +
+            "• Haz clic en 'Cancelar' para descargar PDF SEPARADOS individualmente."
+        );
+
+        if (opcion) {
+            // Un solo PDF consolidado
+            const contenedorConsolidado = document.createElement('div');
+            contenedorConsolidado.style.position = 'absolute';
+            contenedorConsolidado.style.left = '-9999px';
+            contenedorConsolidado.style.top = '-9999px';
+            document.body.appendChild(contenedorConsolidado);
+
+            for (let i = 0; i < empleados.length; i++) {
+                const emp = empleados[i];
+                renderizarBoletaIndividual(emp.id);
+                
+                const clonBoleta = document.getElementById('areaBoletaPdf').cloneNode(true);
+                clonBoleta.id = `boleta_temp_${emp.id}`;
+                
+                if (i < empleados.length - 1) {
+                    clonBoleta.style.pageBreakAfter = 'always';
+                    clonBoleta.style.breakAfter = 'page';
+                }
+                
+                contenedorConsolidado.appendChild(clonBoleta);
+            }
+
             const opt = {
                 margin:       10,
-                filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
+                filename:     `Boletas_Consolidadas_Catorcena.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
             };
-            await html2pdf().set(opt).from(element).save();
+
+            try {
+                await html2pdf().set(opt).from(contenedorConsolidado).save();
+            } catch (error) {
+                console.error("Error al generar el PDF único:", error);
+                alert("Error al generar el PDF único.");
+            } finally {
+                document.body.removeChild(contenedorConsolidado);
+            }
+
+        } else {
+            // Archivos descargados por separado
+            switchTab('mod4');
+            for (const emp of empleados) {
+                renderizarBoletaIndividual(emp.id);
+                await new Promise(r => setTimeout(r, 400));
+                
+                const element = document.getElementById('areaBoletaPdf');
+                const opt = {
+                    margin:       10,
+                    filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2 },
+                    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+                };
+                await html2pdf().set(opt).from(element).save();
+            }
         }
     }
 </script>
