@@ -20,14 +20,10 @@
         .form-group input, .form-group select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
         .btn-main { background: #16a34a; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-main:hover { background: #15803d; }
-        .btn-pdf-sm { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-right: 4px; }
-        .btn-pdf-sm:hover { background: #1d4ed8; }
         .btn-del-sm { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-del-sm:hover { background: #b91c1c; }
-        .btn-pdf { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
-        .btn-pdf:hover { background: #1d4ed8; }
-        .btn-all-pdf { background: #0284c7; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
-        .btn-all-pdf:hover { background: #0369a1; }
+        .btn-sheet-pdf { background: #9333ea; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; font-size: 1rem; }
+        .btn-sheet-pdf:hover { background: #7e22ce; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         th { background: #f1f5f9; color: #334155; }
@@ -35,35 +31,21 @@
         .loading-badge { background: #fef08a; color: #854d0e; padding: 8px 12px; border-radius: 4px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .text-danger { color: #dc2626; }
 
-        /* Estilos de Boleta Individual */
-        .boleta-container {
+        /* Estilos para el Reporte Consolidado en Tabla Global */
+        .reporte-hoja-unica {
             background: #ffffff;
-            border: 2px solid #334155;
-            padding: 25px;
-            margin-top: 20px;
-            border-radius: 6px;
+            padding: 15px;
             font-family: Arial, sans-serif;
-            width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 100%;
             box-sizing: border-box;
         }
-        .boleta-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-        .boleta-header h2 { border-bottom: none; margin: 0; padding: 0; font-size: 1.4rem; }
-        .boleta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; font-size: 0.85rem; }
-        .boleta-table { width: 100%; border: 1px solid #cbd5e1; margin-bottom: 20px; }
-        .boleta-table th, .boleta-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 0.85rem; }
-        .firma-box { margin-top: 40px; display: flex; justify-content: space-around; text-align: center; }
-        .firma-linea { border-top: 1px solid #000; width: 200px; padding-top: 5px; font-size: 0.85rem; }
-
-        /* Clase auxiliar para la generación limpia de PDF consolidado */
-        .impresion-pdf {
-            display: block !important;
-            background: white !important;
-            margin-bottom: 0 !important;
-            page-break-after: always;
-            break-after: page;
-        }
+        .reporte-hoja-unica h2 { text-align: center; margin: 0 0 5px 0; font-size: 1.2rem; border: none; }
+        .reporte-hoja-unica p { text-align: center; margin: 0 0 15px 0; font-size: 0.85rem; }
+        .tabla-hoja-unica { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+        .tabla-hoja-unica th, .tabla-hoja-unica td { border: 1px solid #64748b; padding: 5px 6px; text-align: center; }
+        .tabla-hoja-unica th { background: #e2e8f0; font-weight: bold; color: #1e293b; }
+        .tabla-hoja-unica td.text-left { text-align: left; }
+        .tabla-hoja-unica td.text-right { text-align: right; }
     </style>
 </head>
 <body>
@@ -77,10 +59,10 @@
         <button class="tab-btn active" id="btn-mod1" onclick="switchTab('mod1')">1. Registro Empleados</button>
         <button class="tab-btn" id="btn-mod2" onclick="switchTab('mod2')">2. Asistencia e Incidencias</button>
         <button class="tab-btn" id="btn-mod3" onclick="switchTab('mod3')">3. Cálculo de Nómina</button>
-        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Boletas Individuales</button>
+        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Planilla Consolidada</button>
     </div>
 
-    <!-- MÓDULO 1: REGISTRO DE EMPLEADOS -->
+    <!-- MÓDULO 1: REGISTRO -->
     <div id="mod1" class="section active">
         <h2>1. Registro de Empleados</h2>
         <div class="form-grid">
@@ -189,106 +171,51 @@
         </div>
     </div>
 
-    <!-- MÓDULO 4: BOLETAS PDF -->
+    <!-- MÓDULO 4: PLANILLA CONSOLIDADA -->
     <div id="mod4" class="section">
-        <h2>4. Generación de Boletas de Pago (PDF)</h2>
+        <h2>4. Generación de Planilla Consolidada</h2>
         
         <div class="form-grid">
             <div class="form-group">
-                <label>Rango del Período (Ej. 17/Agosto/2026 - 30/Agosto/2026):</label>
+                <label>Rango del Período:</label>
                 <input type="text" id="textoPeriodo" value="17/Agosto/2026 - 30/Agosto/2026" oninput="actualizarTextoPeriodo()">
-            </div>
-            <div class="form-group">
-                <label>Seleccionar Empleado para Vista Previa:</label>
-                <select id="selectEmpPdf" onchange="renderizarBoletaIndividual()"></select>
             </div>
         </div>
 
-        <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta Mostrada</button>
-        <button class="btn-all-pdf" onclick="descargarPDFUnicoGeneral()">📜 Descargar TODO en un Solo PDF</button>
-        <button class="btn-main" onclick="descargarTodosPDFsSeparados()">📦 Descargar PDFs Individuales</button>
+        <button class="btn-sheet-pdf" onclick="descargarPlanillaGeneralUnaHoja()">📊 Descargar Planilla Consolidada (PDF)</button>
 
-        <!-- CONTENEDOR VISTA PREVIA -->
-        <div id="areaBoletaPdf" class="boleta-container">
-            <div class="boleta-header">
-                <h2>COMPROBANTE DE PAGO CATORCENAL</h2>
-                <p style="margin: 5px 0;"><strong>Período:</strong> <span id="pdfRangoPeriodo">17/Agosto/2026 - 30/Agosto/2026</span></p>
-            </div>
-
-            <div class="boleta-grid">
-                <div><strong>No.:</strong> <span id="bId">-</span></div>
-                <div><strong>DPI:</strong> <span id="bDpi">-</span></div>
-                <div><strong>Empleado:</strong> <span id="bNombre">-</span></div>
-                <div><strong>Grupo / Actividad:</strong> <span id="bGrupoActividad">-</span></div>
-                <div><strong>Puesto Específico:</strong> <span id="bPuesto">-</span></div>
-                <div><strong>Fecha de Ingreso:</strong> <span id="bIngreso">-</span></div>
-                <div><strong>Forma de Pago:</strong> <span id="bFormaPago">-</span></div>
-                <div><strong>Cuenta / Acredítame:</strong> <span id="bCuentaAcreditame">-</span></div>
-            </div>
-
-            <table class="boleta-table">
+        <h3>Vista Previa del Resumen General</h3>
+        <div id="areaPlanillaHojaUnica" class="reporte-hoja-unica">
+            <h2>REPORTE GENERAL DE PLANILLA CATORCENAL</h2>
+            <p><strong>Período:</strong> <span class="lblRangoGeneral">17/Agosto/2026 - 30/Agosto/2026</span></p>
+            
+            <table class="tabla-hoja-unica">
                 <thead>
                     <tr>
-                        <th>Concepto / Ingresos</th>
-                        <th style="text-align: right;">Monto (GTQ)</th>
-                        <th>Concepto / Descuentos</th>
-                        <th style="text-align: right;">Monto (GTQ)</th>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>DPI</th>
+                        <th>Puesto</th>
+                        <th>Días</th>
+                        <th>Sueldo Base</th>
+                        <th>Bonif.</th>
+                        <th>H. Extras</th>
+                        <th>Viáticos</th>
+                        <th>Pendientes</th>
+                        <th>IGSS</th>
+                        <th>Anticipos</th>
+                        <th>Líquido Recibir</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Sueldo Base (<span id="bDias">14</span> días)</td>
-                        <td style="text-align: right;">Q <span id="bSalarioBase">0.00</span></td>
-                        <td>Descuento IGSS</td>
-                        <td style="text-align: right;" class="text-danger">Q <span id="bIgss">0.00</span></td>
-                    </tr>
-                    <tr>
-                        <td>Bonificación</td>
-                        <td style="text-align: right;">Q <span id="bBonificacion">0.00</span></td>
-                        <td>Préstamos / Anticipos</td>
-                        <td style="text-align: right;" class="text-danger">Q <span id="bPrestamos">0.00</span></td>
-                    </tr>
-                    <tr>
-                        <td>Horas Extras (<span id="bCantHoras">0</span> hrs)</td>
-                        <td style="text-align: right;">Q <span id="bHorasExtras">0.00</span></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Viáticos Totales</td>
-                        <td style="text-align: right;">Q <span id="bViaticos">0.00</span></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Pagos Pendientes Anterior</td>
-                        <td style="text-align: right;">Q <span id="bPendientes">0.00</span></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td style="background: #f8fafc;"><strong>Total Ingresos Bruto</strong></td>
-                        <td style="text-align: right; background: #f8fafc;"><strong>Q <span id="bTotIngresos">0.00</span></strong></td>
-                        <td style="background: #f8fafc;"><strong>Total Descuentos</strong></td>
-                        <td style="text-align: right; background: #f8fafc;" class="text-danger"><strong>Q <span id="bTotDescuentos">0.00</span></strong></td>
-                    </tr>
+                <tbody id="tbodyPlanillaHojaUnica">
                 </tbody>
             </table>
-
-            <div style="background: #f1f5f9; padding: 12px; border-radius: 4px; text-align: right; font-size: 1.1rem;">
-                <strong>TOTAL LÍQUIDO A RECIBIR: Q <span id="bNetoRecibir">0.00</span></strong>
-            </div>
-
-            <div class="firma-box">
-                <div><div class="firma-linea">Elaborado por (Patrono)</div></div>
-                <div><div class="firma-linea">Conforme / Empleado</div></div>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbxpHUiYw7lrWt7i0CzJeRrKxms6Z6DcthM0_K7wMRFeMQIO4HI4aQqrhwhGn5KKV1s8oA/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbwSSdDeQd0dwFad5fJ5Ngq7WNAD9ZXUR-9IQ4VjcEss1u27aj4GVfRSNOC2oyc412QP9A/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -355,10 +282,12 @@
                     };
                 });
                 renderTablaEmpleados();
+                renderTablaHojaUnica();
                 if (status) { status.innerText = "✅ Sincronizado"; status.style.background = "#dcfce7"; status.style.color = "#15803d"; }
             } else {
                 empleados = [];
                 renderTablaEmpleados();
+                renderTablaHojaUnica();
                 if (status) { status.innerText = "ℹ️ Conectado. Sin empleados en Sheets."; status.style.background = "#eff6ff"; status.style.color = "#1e40af"; }
             }
         };
@@ -377,7 +306,7 @@
 
         if (tabId === 'mod2') cargarEmpleadoAsistencia();
         if (tabId === 'mod3') cargarEmpleadoNomina();
-        if (tabId === 'mod4') renderizarBoletaIndividual();
+        if (tabId === 'mod4') renderTablaHojaUnica();
     }
 
     function agregarEmpleado() {
@@ -415,6 +344,7 @@
         }).then(() => {
             empleados.push(nuevoEmp);
             renderTablaEmpleados();
+            renderTablaHojaUnica();
             alert(`✅ Empleado "${nombre}" guardado con éxito.`);
         }).catch(err => {
             console.error(err);
@@ -428,11 +358,9 @@
         tbody.innerHTML = '';
         const selAsis = document.getElementById('selectEmpAsistencia');
         const selNom = document.getElementById('selectEmpNomina');
-        const selPdf = document.getElementById('selectEmpPdf');
 
         if (selAsis) selAsis.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
         if (selNom) selNom.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
-        if (selPdf) selPdf.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
 
         empleados.forEach(e => {
             const tr = document.createElement('tr');
@@ -443,7 +371,6 @@
                 <td>Q ${formatearQ(e.salario)}</td>
                 <td>${e.cuenta || '-'}<br><small>Cod: ${e.codigoAcreditame || '-'}</small></td>
                 <td>
-                    <button class="btn-pdf-sm" onclick="descargarPDFPorId(${e.id})">📄 PDF</button>
                     <button class="btn-del-sm" onclick="eliminarEmpleado(${e.id})">🗑️ Eliminar</button>
                 </td>
             `;
@@ -451,7 +378,6 @@
 
             if (selAsis) selAsis.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
             if (selNom) selNom.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
-            if (selPdf) selPdf.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
         });
     }
 
@@ -468,6 +394,7 @@
             }).then(() => {
                 empleados = empleados.filter(e => e.id !== id);
                 renderTablaEmpleados();
+                renderTablaHojaUnica();
                 alert(`🗑️ Empleado "${emp.nombre}" eliminado correctamente.`);
             }).catch(err => {
                 console.error(err);
@@ -495,6 +422,7 @@
         emp.diasAsistidos = parseInt(document.getElementById('empDiasAsistidos').value) || 0;
         emp.viaticoDiario = parseMontoSeguro(document.getElementById('empViaticoDiario').value);
         emp.horasExtras = parseMontoSeguro(document.getElementById('cantHorasExtras').value);
+        renderTablaHojaUnica();
         alert(`✅ Asistencia y viáticos guardados para ${emp.nombre}`);
     }
 
@@ -542,135 +470,93 @@
         document.getElementById('lblDescuentoIgss').innerText = formatearQ(emp.igss);
         document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
         document.getElementById('lblNetoPagar').innerText = formatearQ(neto > 0 ? neto : 0);
+
+        renderTablaHojaUnica();
     }
 
     function actualizarTextoPeriodo() {
         const txt = document.getElementById('textoPeriodo').value;
-        document.getElementById('pdfRangoPeriodo').innerText = txt;
+        document.querySelectorAll('.lblRangoGeneral').forEach(e => e.innerText = txt);
     }
 
-    function renderizarBoletaIndividual(empId) {
-        const select = document.getElementById('selectEmpPdf');
-        let id = empId || (select ? parseInt(select.value) : null);
-        if (!id && empleados.length > 0) id = empleados[0].id;
-        if (!id) return;
-        if (select && !empId) select.value = id;
+    // RENDERIZAR TABLA CONSOLIDADA GENERAL CON TODOS LOS EMPLEADOS JUNTOS
+    function renderTablaHojaUnica() {
+        const tbody = document.getElementById('tbodyPlanillaHojaUnica');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-        const emp = empleados.find(e => e.id === id);
-        if (!emp) return;
+        let totSueldos = 0, totBonif = 0, totExtras = 0, totViat = 0, totPend = 0, totIgss = 0, totPrest = 0, totNeto = 0;
 
-        const pagoDiario = emp.salario / 14;
-        const sueldoProporcional = pagoDiario * (emp.diasAsistidos || 14);
-        const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
-        const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos || 14);
+        empleados.forEach(emp => {
+            const pagoDiario = emp.salario / 14;
+            const sueldoProporcional = pagoDiario * (emp.diasAsistidos || 14);
+            const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
+            const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos || 14);
 
-        const totIngresos = sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + (emp.pagosPendientes||0);
-        const totDescuentos = (emp.prestamo||0) + (emp.igss||0);
-        const neto = totIngresos - totDescuentos;
+            const totIngresos = sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + (emp.pagosPendientes||0);
+            const totDescuentos = (emp.prestamo||0) + (emp.igss||0);
+            const neto = totIngresos - totDescuentos;
 
-        document.getElementById('bId').innerText = emp.id;
-        document.getElementById('bNombre').innerText = emp.nombre;
-        document.getElementById('bDpi').innerText = emp.dpi || '-';
-        document.getElementById('bGrupoActividad').innerText = `${emp.grupo || ''} / ${emp.actividad || ''}`;
-        document.getElementById('bPuesto').innerText = emp.puesto || '-';
-        document.getElementById('bIngreso').innerText = emp.fechaIngreso || '-';
-        document.getElementById('bFormaPago').innerText = emp.formaPago || '-';
-        document.getElementById('bCuentaAcreditame').innerText = `Cta: ${emp.cuenta || '-'} | Cód: ${emp.codigoAcreditame || '-'}`;
+            totSueldos += sueldoProporcional;
+            totBonif += (emp.bonificacion||0);
+            totExtras += pagoExtras;
+            totViat += totViaticos;
+            totPend += (emp.pagosPendientes||0);
+            totIgss += (emp.igss||0);
+            totPrest += (emp.prestamo||0);
+            totNeto += (neto > 0 ? neto : 0);
 
-        document.getElementById('bDias').innerText = emp.diasAsistidos || 14;
-        document.getElementById('bSalarioBase').innerText = formatearQ(sueldoProporcional);
-        document.getElementById('bBonificacion').innerText = formatearQ(emp.bonificacion);
-        document.getElementById('bCantHoras').innerText = emp.horasExtras || 0;
-        document.getElementById('bHorasExtras').innerText = formatearQ(pagoExtras);
-        document.getElementById('bViaticos').innerText = formatearQ(totViaticos);
-        document.getElementById('bPendientes').innerText = formatearQ(emp.pagosPendientes);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${emp.id}</td>
+                <td class="text-left"><strong>${emp.nombre}</strong></td>
+                <td>${emp.dpi || '-'}</td>
+                <td class="text-left">${emp.puesto || '-'}</td>
+                <td>${emp.diasAsistidos || 14}</td>
+                <td class="text-right">Q${formatearQ(sueldoProporcional)}</td>
+                <td class="text-right">Q${formatearQ(emp.bonificacion)}</td>
+                <td class="text-right">Q${formatearQ(pagoExtras)}</td>
+                <td class="text-right">Q${formatearQ(totViaticos)}</td>
+                <td class="text-right">Q${formatearQ(emp.pagosPendientes)}</td>
+                <td class="text-right text-danger">Q${formatearQ(emp.igss)}</td>
+                <td class="text-right text-danger">Q${formatearQ(emp.prestamo)}</td>
+                <td class="text-right"><strong>Q${formatearQ(neto > 0 ? neto : 0)}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-        document.getElementById('bIgss').innerText = formatearQ(emp.igss);
-        document.getElementById('bPrestamos').innerText = formatearQ(emp.prestamo);
-
-        document.getElementById('bTotIngresos').innerText = formatearQ(totIngresos);
-        document.getElementById('bTotDescuentos').innerText = formatearQ(totDescuentos);
-        document.getElementById('bNetoRecibir').innerText = formatearQ(neto > 0 ? neto : 0);
+        // Fila de Totales
+        const trTot = document.createElement('tr');
+        trTot.style.background = '#f1f5f9';
+        trTot.style.fontWeight = 'bold';
+        trTot.innerHTML = `
+            <td colspan="5" class="text-right">TOTALES:</td>
+            <td class="text-right">Q${formatearQ(totSueldos)}</td>
+            <td class="text-right">Q${formatearQ(totBonif)}</td>
+            <td class="text-right">Q${formatearQ(totExtras)}</td>
+            <td class="text-right">Q${formatearQ(totViat)}</td>
+            <td class="text-right">Q${formatearQ(totPend)}</td>
+            <td class="text-right text-danger">Q${formatearQ(totIgss)}</td>
+            <td class="text-right text-danger">Q${formatearQ(totPrest)}</td>
+            <td class="text-right">Q${formatearQ(totNeto)}</td>
+        `;
+        tbody.appendChild(trTot);
     }
 
-    function descargarPDFSeleccionado() {
-        const element = document.getElementById('areaBoletaPdf');
-        const nombreEmp = document.getElementById('bNombre').innerText.trim() || "Boleta";
+    // DESCARGAR PLANILLA GENERAL CONSOLIDADA EN PDF HORIZONTAL
+    function descargarPlanillaGeneralUnaHoja() {
+        if (empleados.length === 0) return alert("No hay empleados registrados para generar la planilla.");
+
+        const element = document.getElementById('areaPlanillaHojaUnica');
         const opt = {
-            margin:       10,
-            filename:     `Boleta_${nombreEmp.replace(/\s+/g, '_')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    }
-
-    function descargarPDFPorId(id) {
-        switchTab('mod4');
-        renderizarBoletaIndividual(id);
-        setTimeout(() => {
-            descargarPDFSeleccionado();
-        }, 300);
-    }
-
-    // DESCARGAR UN SOLO PDF GENERAL CON TODOS LOS EMPLEADOS
-    async function descargarPDFUnicoGeneral() {
-        if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
-
-        const contenedorConsolidado = document.createElement('div');
-        contenedorConsolidado.id = "contenedorTempPdf";
-        document.body.appendChild(contenedorConsolidado);
-
-        for (let i = 0; i < empleados.length; i++) {
-            const emp = empleados[i];
-            renderizarBoletaIndividual(emp.id);
-            
-            const clonBoleta = document.getElementById('areaBoletaPdf').cloneNode(true);
-            clonBoleta.id = `boleta_temp_${emp.id}`;
-            clonBoleta.classList.add('impresion-pdf');
-            
-            contenedorConsolidado.appendChild(clonBoleta);
-        }
-
-        const opt = {
-            margin:       10,
-            filename:     `Boletas_Consolidadas_Catorcena.pdf`,
+            margin:       [8, 8, 8, 8],
+            filename:     `Planilla_General_Consolidada.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'legacy'] }
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
         };
 
-        try {
-            await html2pdf().set(opt).from(contenedorConsolidado).save();
-        } catch (error) {
-            console.error("Error al generar el PDF único:", error);
-            alert("Error al generar el PDF único.");
-        } finally {
-            document.body.removeChild(contenedorConsolidado);
-        }
-    }
-
-    // DESCARGAR UN PDF SEPARADO POR CADA EMPLEADO
-    async function descargarTodosPDFsSeparados() {
-        if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
-
-        switchTab('mod4');
-        for (const emp of empleados) {
-            renderizarBoletaIndividual(emp.id);
-            await new Promise(r => setTimeout(r, 400));
-            
-            const element = document.getElementById('areaBoletaPdf');
-            const opt = {
-                margin:       10,
-                filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-            };
-            await html2pdf().set(opt).from(element).save();
-        }
+        html2pdf().set(opt).from(element).save();
     }
 </script>
 </body>
