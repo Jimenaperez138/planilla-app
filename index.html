@@ -26,6 +26,8 @@
         .btn-del-sm:hover { background: #b91c1c; }
         .btn-pdf { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
         .btn-pdf:hover { background: #1d4ed8; }
+        .btn-all-pdf { background: #0284c7; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; margin-right: 10px; }
+        .btn-all-pdf:hover { background: #0369a1; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
         th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         th { background: #f1f5f9; color: #334155; }
@@ -197,7 +199,8 @@
         </div>
 
         <button class="btn-pdf" onclick="descargarPDFSeleccionado()">📄 Descargar Boleta Mostrada</button>
-        <button class="btn-main" onclick="descargarTodosLosPDFs()">📦 Descargar PDF de TODOS</button>
+        <button class="btn-all-pdf" onclick="descargarPDFUnicoGeneral()">📜 Descargar TODO en un Solo PDF</button>
+        <button class="btn-main" onclick="descargarTodosPDFsSeparados()">📦 Descargar PDFs Individuales (Zip/Múltiple)</button>
 
         <!-- CONTENEDOR PDF -->
         <div id="areaBoletaPdf" class="boleta-container">
@@ -279,7 +282,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbzVnXSfxi3Cvkl5SITrLWi8jaRdX0mkOagABhm-p0HGK-A9as4iF4NbS4MmKaYj8GURtw/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbxW-zJM7Y7QVgWzCB6JOdHaeSDyM2gfIGIEfb8zEUWfbVNrVl7u1JjWOV0L3mV6Gg1Arg/exec";
     let empleados = [];
 
     function parseMontoSeguro(val) {
@@ -605,73 +608,68 @@
         }, 300);
     }
 
-    async function descargarTodosLosPDFs() {
+    // OPCIÓN A: UN SOLO PDF CON TODOS LOS EMPLEADOS
+    async function descargarPDFUnicoGeneral() {
         if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
 
-        const opcion = confirm(
-            "¿Cómo deseas descargar las boletas?\n\n" +
-            "• Haz clic en 'Aceptar' para un SOLO PDF con todos los empleados.\n" +
-            "• Haz clic en 'Cancelar' para descargar PDF SEPARADOS individualmente."
-        );
+        const contenedorConsolidado = document.createElement('div');
+        contenedorConsolidado.style.position = 'absolute';
+        contenedorConsolidado.style.left = '-9999px';
+        contenedorConsolidado.style.top = '-9999px';
+        document.body.appendChild(contenedorConsolidado);
 
-        if (opcion) {
-            // Un solo PDF consolidado
-            const contenedorConsolidado = document.createElement('div');
-            contenedorConsolidado.style.position = 'absolute';
-            contenedorConsolidado.style.left = '-9999px';
-            contenedorConsolidado.style.top = '-9999px';
-            document.body.appendChild(contenedorConsolidado);
-
-            for (let i = 0; i < empleados.length; i++) {
-                const emp = empleados[i];
-                renderizarBoletaIndividual(emp.id);
-                
-                const clonBoleta = document.getElementById('areaBoletaPdf').cloneNode(true);
-                clonBoleta.id = `boleta_temp_${emp.id}`;
-                
-                if (i < empleados.length - 1) {
-                    clonBoleta.style.pageBreakAfter = 'always';
-                    clonBoleta.style.breakAfter = 'page';
-                }
-                
-                contenedorConsolidado.appendChild(clonBoleta);
+        for (let i = 0; i < empleados.length; i++) {
+            const emp = empleados[i];
+            renderizarBoletaIndividual(emp.id);
+            
+            const clonBoleta = document.getElementById('areaBoletaPdf').cloneNode(true);
+            clonBoleta.id = `boleta_temp_${emp.id}`;
+            
+            if (i < empleados.length - 1) {
+                clonBoleta.style.pageBreakAfter = 'always';
+                clonBoleta.style.breakAfter = 'page';
             }
+            
+            contenedorConsolidado.appendChild(clonBoleta);
+        }
 
+        const opt = {
+            margin:       10,
+            filename:     `Boletas_Consolidadas_Catorcena.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        try {
+            await html2pdf().set(opt).from(contenedorConsolidado).save();
+        } catch (error) {
+            console.error("Error al generar el PDF único:", error);
+            alert("Error al generar el PDF único.");
+        } finally {
+            document.body.removeChild(contenedorConsolidado);
+        }
+    }
+
+    // OPCIÓN B: UN ARCHIVO PDF SEPARADO PARA CADA EMPLEADO
+    async function descargarTodosPDFsSeparados() {
+        if (empleados.length === 0) return alert("No hay empleados registrados para exportar.");
+
+        switchTab('mod4');
+        for (const emp of empleados) {
+            renderizarBoletaIndividual(emp.id);
+            await new Promise(r => setTimeout(r, 400));
+            
+            const element = document.getElementById('areaBoletaPdf');
             const opt = {
                 margin:       10,
-                filename:     `Boletas_Consolidadas_Catorcena.pdf`,
+                filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
-                pagebreak:    { mode: ['css', 'legacy'] }
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
             };
-
-            try {
-                await html2pdf().set(opt).from(contenedorConsolidado).save();
-            } catch (error) {
-                console.error("Error al generar el PDF único:", error);
-                alert("Error al generar el PDF único.");
-            } finally {
-                document.body.removeChild(contenedorConsolidado);
-            }
-
-        } else {
-            // Archivos descargados por separado
-            switchTab('mod4');
-            for (const emp of empleados) {
-                renderizarBoletaIndividual(emp.id);
-                await new Promise(r => setTimeout(r, 400));
-                
-                const element = document.getElementById('areaBoletaPdf');
-                const opt = {
-                    margin:       10,
-                    filename:     `Boleta_${emp.nombre.replace(/\s+/g, '_')}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2 },
-                    jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-                };
-                await html2pdf().set(opt).from(element).save();
-            }
+            await html2pdf().set(opt).from(element).save();
         }
     }
 </script>
