@@ -4,132 +4,295 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Planilla Catorcenal - Guatemala</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1e293b; margin-bottom: 5px; }
-        .control-hojas { background: #e0f2fe; border: 1px solid #7dd3fc; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; font-weight: bold; }
-        .control-hojas select { padding: 8px 12px; border-radius: 4px; border: 1px solid #38bdf8; font-size: 0.95rem; flex-grow: 1; max-width: 320px; background: white; cursor: pointer; }
-        h2, h3 { color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 15px; border: none; background: #e2e8f0; cursor: pointer; border-radius: 5px; font-weight: bold; color: #475569; }
-        .tab-btn.active { background: #2563eb; color: white; }
-        .section { display: none; }
-        .section.active { display: block; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #475569; }
-        .form-group input, .form-group select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; }
-        .btn-main { background: #16a34a; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        .btn-main:hover { background: #15803d; }
-        .btn-del-sm { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-sheet-pdf { background: #9333ea; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; font-size: 1rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
-        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-        th { background: #f1f5f9; color: #334155; }
-        .resumen-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .loading-badge { background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; display: inline-block; font-weight: bold; }
-        .text-danger { color: #dc2626; }
-        
-        /* Módulo de Asistencia / Calendario */
-        .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 15px; }
-        @media (max-width: 768px) {
-            .grid-dias { grid-template-columns: repeat(2, 1fr); }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
-        .dia-box { padding: 10px 4px; border-radius: 6px; text-align: center; cursor: pointer; font-weight: bold; font-size: 0.85rem; user-select: none; border: 2px solid #cbd5e1; transition: all 0.2s; }
-        .dia-box.asistio { background-color: #dcfce7; color: #166534; border-color: #86efac; }
-        .dia-box.falto { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-        .dia-nombre { font-size: 0.75rem; text-transform: uppercase; color: #475569; margin-bottom: 2px; }
-        .dia-box.asistio .dia-nombre { color: #15803d; }
-        .dia-box.falto .dia-nombre { color: #b91c1c; }
 
-        /* Reporte PDF */
-        .reporte-hoja-unica { background: #ffffff; padding: 10px; font-family: Arial, sans-serif; width: 100%; box-sizing: border-box; }
-        .reporte-hoja-unica h2 { text-align: center; margin: 0 0 5px 0; font-size: 1.1rem; border: none; }
-        .reporte-hoja-unica h3 { text-align: center; margin: 0 0 5px 0; font-size: 0.95rem; border: none; color: #2563eb; }
-        .reporte-hoja-unica p { text-align: center; margin: 0 0 10px 0; font-size: 0.8rem; }
-        .tabla-hoja-unica { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
-        .tabla-hoja-unica th, .tabla-hoja-unica td { border: 1px solid #64748b; padding: 4px 5px; text-align: center; }
-        .tabla-hoja-unica th { background: #e2e8f0; font-weight: bold; color: #1e293b; }
-        .tabla-hoja-unica td.text-left { text-align: left; }
-        .tabla-hoja-unica td.text-right { text-align: right; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        /* Banner de Pestaña */
+        .sheet-banner {
+            background-color: #e0f2fe;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sheet-banner select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #93c5fd;
+            font-weight: 600;
+        }
+
+        .badge-status {
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Navegación por pestañas */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Secciones */
+        .section {
+            display: none;
+            background: var(--surface);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Formularios */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-main {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-main:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Grid de Días (Módulo 2) */
+        .resumen-card {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .grid-dias {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .dia-box {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .dia-box.asistio {
+            border-color: #86efac;
+            background-color: #f0fdf4;
+            color: #166534;
+        }
+
+        .dia-box.falto {
+            border-color: #fca5a5;
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .dia-nombre {
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        /* Tablas */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Sistema de Planilla Catorcenal - Guatemala</h1>
-    
-    <div class="control-hojas">
+
+    <!-- Banner de sincronización con Google Sheets -->
+    <div class="sheet-banner">
         <label>📂 Pestaña activa en Google Sheets:</label>
-        <select id="selectorHojas" onchange="cambiarHojaSeleccionada()">
-            <option value="">Cargando pestañas...</option>
-        </select>
-        <span id="statusCarga" class="loading-badge">✓ Sincronizado</span>
+        <select id="selectPestanaSheet" onchange="cambiarPestanaSheet()"></select>
+        <span class="badge-status" id="badgeEstado">✓ Sincronizado</span>
     </div>
 
-    <div class="nav-tabs">
-        <button class="tab-btn active" id="btn-mod1" onclick="switchTab('mod1')">1. Registro Empleados</button>
-        <button class="tab-btn" id="btn-mod2" onclick="switchTab('mod2')">2. Asistencia e Incidencias</button>
-        <button class="tab-btn" id="btn-mod3" onclick="switchTab('mod3')">3. Cálculo de Nómina</button>
-        <button class="tab-btn" id="btn-mod4" onclick="switchTab('mod4')">4. Planilla Consolidada</button>
+    <!-- Pestañas de Navegación -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(1)">1. Registro Empleados</button>
+        <button class="tab-btn" onclick="switchTab(2)">2. Asistencia e Incidencias</button>
+        <button class="tab-btn" onclick="switchTab(3)">3. Cálculo de Nómina</button>
+        <button class="tab-btn" onclick="switchTab(4)">4. Planilla Consolidada</button>
     </div>
 
-    <!-- MÓDULO 1 -->
+    <!-- MÓDULO 1: REGISTRO -->
     <div id="mod1" class="section active">
-        <h2>1. Registro de Empleados en <span class="lblNombreHojaActual"></span></h2>
-        <div class="form-grid">
-            <div class="form-group"><label>Nombre Completo:*</label><input type="text" id="empNombre" placeholder="Ej: Sergio Giovanny Patzán"></div>
-            <div class="form-group"><label>DPI:</label><input type="text" id="empDpi" placeholder="2551 17868 0505"></div>
-            <div class="form-group"><label>Fecha de Ingreso:</label><input type="date" id="empFechaIngreso"></div>
-            <div class="form-group"><label>Grupo:</label><input type="text" id="empGrupo" placeholder="Ej: AYUDANTES VIVERO"></div>
-            <div class="form-group"><label>Puesto Específico:</label><input type="text" id="empPuesto" placeholder="AYUDANTE DE VIVERO CALZA"></div>
-            <div class="form-group"><label>Presupuesto:</label><input type="text" id="empPresupuesto" placeholder="Ej: VICLZ"></div>
-            <div class="form-group"><label>Actividad:</label><input type="text" id="empActividad" placeholder="Ej: VIVERO CALZA"></div>
-            <div class="form-group"><label>Sueldo Catorcenal Fijo (GTQ):*</label><input type="number" id="empSalario" value="1950.00" step="0.01"></div>
-            <div class="form-group">
-                <label>Forma de Pago:</label>
-                <select id="empFormaPago">
-                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                    <option value="CHEQUE">CHEQUE</option>
-                    <option value="EFECTIVO">EFECTIVO</option>
-                </select>
+        <h2>1. Registro y Edición de Empleados</h2>
+        <form id="formEmpleado" onsubmit="guardarEmpleado(event)" style="margin-top:15px;">
+            <input type="hidden" id="empId">
+            <div class="form-grid">
+                <div class="form-group"><label>Nombre Completo:</label><input type="text" id="empNombre" required></div>
+                <div class="form-group"><label>DPI:</label><input type="text" id="empDpi"></div>
+                <div class="form-group"><label>Fecha Ingreso:</label><input type="date" id="empFechaIngreso"></div>
+                <div class="form-group"><label>Grupo / Finca:</label><input type="text" id="empGrupo"></div>
+                <div class="form-group"><label>Puesto:</label><input type="text" id="empPuesto"></div>
+                <div class="form-group"><label>Presupuesto:</label><input type="text" id="empPresupuesto"></div>
+                <div class="form-group"><label>Actividad:</label><input type="text" id="empActividad"></div>
+                <div class="form-group"><label>Salario Quincenal / Catorcenal (GTQ):</label><input type="number" id="empSalario" step="0.01" value="1600.00" required></div>
+                <div class="form-group"><label>Bonificación Ley (GTQ):</label><input type="number" id="empBonificacion" step="0.01" value="125.00"></div>
+                <div class="form-group"><label>Forma de Pago:</label>
+                    <select id="empFormaPago">
+                        <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                        <option value="CHEQUE">CHEQUE</option>
+                        <option value="EFECTIVO">EFECTIVO</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Número de Cuenta:</label><input type="text" id="empCuenta"></div>
+                <div class="form-group"><label>Código Acreditame:</label><input type="text" id="empCodigoAcreditame"></div>
             </div>
-            <div class="form-group"><label>No. Cuenta:</label><input type="text" id="empNumCuenta" placeholder="4562159204"></div>
-            <div class="form-group"><label>Cód. Acredítame:</label><input type="text" id="empCodigoAcreditame" placeholder="1596292"></div>
-        </div>
-        <button class="btn-main" onclick="agregarEmpleado()">+ Agregar Empleado</button>
+            <button type="submit" class="btn-main">💾 Guardar Empleado</button>
+        </form>
 
-        <h3>Empleados Registrados en <span class="lblNombreHojaActual"></span></h3>
-        <div style="overflow-x: auto;">
-            <table>
+        <div class="table-container">
+            <h3>Lista de Empleados Registrados</h3>
+            <table id="tablaEmpleados">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Grupo / Puesto</th>
-                        <th>Sueldo Base</th>
-                        <th>Cta / Acredítame</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Nombre</th><th>Puesto</th><th>Salario</th><th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="tbodyEmpleados"></tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
-    <!-- MÓDULO 2 -->
+    <!-- MÓDULO 2: ASISTENCIA E INCIDENCIAS -->
     <div id="mod2" class="section">
         <h2>2. Control de Asistencia e Incidencias (Período de 14 Días)</h2>
-        <div class="form-grid">
+        <div class="form-grid" style="margin-top:15px;">
             <div class="form-group" style="grid-column: span 2;">
                 <label>Seleccionar Empleado:</label>
                 <select id="selectEmpAsistencia" onchange="cargarEmpleadoAsistencia()"></select>
             </div>
             <div class="form-group">
                 <label>📅 Fecha Inicial de la Catorcena:</label>
-                <!-- Calendario interactivo -->
                 <input type="date" id="inputFechaInicioCatorcena" value="2026-08-31" onchange="renderGridDias()">
             </div>
             <div class="form-group">
@@ -143,16 +306,15 @@
         </div>
 
         <div class="resumen-card">
-            <h3>Marcar Días Trabajos / Faltas (Sincronizado con Checkboxes en Sheets)</h3>
-            <p style="font-weight: bold; color: #1e293b; font-size: 1.05rem; margin-top: -5px;">
+            <h3>Marcar Días Trabajados / Faltas</h3>
+            <p style="font-weight: bold; color: #1e293b; font-size: 1.05rem; margin-top: 5px;">
                 📅 Período: <span id="lblRangoFechasCatorcena" style="color: #2563eb;">Del 31 de Agosto al 13 de Septiembre</span>
             </p>
-            <p>
-                <strong>Días Trabajados:</strong> <span id="lblAsistidosContador" style="color: #166534; font-weight: bold; font-size: 1.1rem;">14</span> | 
-                <strong>Días No Trabajados (Faltas):</strong> <span id="lblFaltasContador" style="color: #dc2626; font-weight: bold; font-size: 1.1rem;">0</span>
+            <p style="margin-top:5px;">
+                <strong>Días Trabajados:</strong> <span id="lblAsistidosContador" class="text-success" style="font-weight: bold; font-size: 1.1rem;">14</span> | 
+                <strong>Días No Trabajados (Faltas):</strong> <span id="lblFaltasContador" class="text-danger" style="font-weight: bold; font-size: 1.1rem;">0</span>
             </p>
             
-            <!-- Grid dinámico de 14 días con fechas exactas -->
             <div id="gridDiasCatorcena" class="grid-dias"></div>
             
             <p style="margin-top: 15px; font-size: 0.95rem;">
@@ -161,329 +323,230 @@
             </p>
         </div>
 
-        <button class="btn-main" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+        <button class="btn-main" style="margin-top:15px;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
     </div>
 
-    <!-- MÓDULO 3 -->
+    <!-- MÓDULO 3: CÁLCULO DE NÓMINA -->
     <div id="mod3" class="section">
-        <h2>3. Cálculo de Nómina (<span class="lblNombreHojaActual"></span>)</h2>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Seleccionar Empleado:</label>
+        <h2>3. Cálculo de Nómina</h2>
+        <div class="form-grid" style="margin-top:15px;">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Seleccionar Empleado para Ajustes Manuales:</label>
                 <select id="selectEmpNomina" onchange="cargarEmpleadoNomina()"></select>
             </div>
             <div class="form-group">
-                <label>Bonificación (GTQ):</label>
-                <input type="number" id="inputBonificacion" value="0.00" step="0.01" oninput="calcularNominaActual()">
+                <label>Pagos Pendientes / Bonos Extra (GTQ):</label>
+                <input type="number" id="nomPagosPendientes" value="0.00" step="0.01">
             </div>
             <div class="form-group">
-                <label>Descuento IGSS (GTQ):</label>
-                <input type="number" id="inputIgss" value="0.00" step="0.01" oninput="calcularNominaActual()">
+                <label>Descuento IGSS (4.83%) (GTQ):</label>
+                <input type="number" id="nomIgss" value="0.00" step="0.01">
             </div>
             <div class="form-group">
-                <label>Pagos Pendientes Anteriores (GTQ):</label>
-                <input type="number" id="inputPendientes" value="0.00" step="0.01" oninput="calcularNominaActual()">
-            </div>
-            <div class="form-group">
-                <label>Préstamos / Anticipos (GTQ):</label>
-                <input type="number" id="inputPrestamo" value="0.00" step="0.01" oninput="calcularNominaActual()">
+                <label>Descuento Préstamo / Anticipos (GTQ):</label>
+                <input type="number" id="nomPrestamo" value="0.00" step="0.01">
             </div>
         </div>
-        
-        <div class="resumen-card">
-            <h3>Desglose del Pago (Vista Previa)</h3>
-            <p><strong>Días Laborados:</strong> <span id="lblDias">14</span> | <strong>Salario Diario:</strong> Q <span id="lblSalarioDiario">0.00</span></p>
-            <hr>
-            <p><strong>Sueldo Base (Proporcional):</strong> Q <span id="lblBaseProporcional">0.00</span></p>
-            <p><strong>Bonificación:</strong> Q <span id="lblBonificacion">0.00</span></p>
-            <p><strong>Horas Extras:</strong> Q <span id="lblPagoExtras">0.00</span></p>
-            <p><strong>Viáticos Totales:</strong> Q <span id="lblViaticos">0.00</span></p>
-            <p><strong>Pagos Pendientes:</strong> Q <span id="lblPendientes">0.00</span></p>
-            <p class="text-danger"><strong>Descuento IGSS:</strong> Q -<span id="lblDescuentoIgss">0.00</span></p>
-            <p class="text-danger"><strong>Descuento Préstamos:</strong> Q -<span id="lblDescuentoPrestamo">0.00</span></p>
-            <hr>
-            <p style="font-size: 1.2rem; color: #16a34a;"><strong>TOTAL LÍQUIDO A RECIBIR: Q <span id="lblNetoPagar">0.00</span></strong></p>
-        </div>
-        <button class="btn-main" onclick="guardarNominaEmpleado()">💾 Guardar Cálculo de Nómina</button>
+        <button class="btn-main" onclick="guardarAjustesNomina()">💾 Guardar Ajustes de Nómina</button>
     </div>
 
-    <!-- MÓDULO 4 -->
+    <!-- MÓDULO 4: PLANILLA CONSOLIDADA -->
     <div id="mod4" class="section">
-        <h2>4. Planilla Consolidada</h2>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Período / Rango de Fechas:</label>
-                <input type="text" id="textoPeriodo" value="Del 31 de Agosto al 13 de Septiembre" oninput="actualizarTextoPeriodo()">
-            </div>
-        </div>
-        <button class="btn-sheet-pdf" onclick="descargarPlanillaGeneralUnaHoja()">📊 Descargar PDF (<span class="lblNombreHojaActual"></span>)</button>
-
-        <h3>Vista Previa del Reporte General</h3>
-        <div id="areaPlanillaHojaUnica" class="reporte-hoja-unica">
-            <h2>REPORTE GENERAL DE PLANILLA CATORCENAL</h2>
-            <h3 class="lblNombreHojaActual"></h3>
-            <p><strong>Período:</strong> <span id="lblRangoGeneral">Del 31 de Agosto al 13 de Septiembre</span></p>
-            
-            <table class="tabla-hoja-unica">
+        <h2>4. Planilla Consolidada de Pago</h2>
+        <div class="table-container">
+            <table id="tablaConsolidada">
                 <thead>
                     <tr>
-                        <th>ID</th><th>Empleado</th><th>DPI</th><th>Puesto</th><th>Días Asist.</th><th>Faltas</th>
-                        <th>Sueldo Base</th><th>Bonif.</th><th>H. Extras</th><th>Viáticos</th>
-                        <th>Pendientes</th><th>IGSS</th><th>Anticipos</th><th>Líquido Recibir</th>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Días Trab.</th>
+                        <th>Salario Devengado</th>
+                        <th>Bono Ley</th>
+                        <th>Viáticos</th>
+                        <th>Horas Extras</th>
+                        <th>Subtotal Devengado</th>
+                        <th>IGSS</th>
+                        <th>Préstamos</th>
+                        <th>LÍQUIDO A RECIBIR</th>
                     </tr>
                 </thead>
-                <tbody id="tbodyPlanillaHojaUnica"></tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<script>   
- const URL_API = "https://script.google.com/macros/s/AKfycbx-9drbzQA8ZjXphxwZEiCtaooeU2FkYWwXuTEAnaIJYDUHpKE7iouQOHhimBwK7LmLGA/exec";
-    
-    let empleados = [];
-    let hojaActual = "";
-    let estadosDiasTemp = Array(14).fill(true);
-    const nombresDiasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLcUcNvPsFDfX_QJ08WBQr7f0Q5WAHZcuomO2PFyRS2bqbzcuBGHMb9HHhgucBV6ZkMw/exec";
 
-    function parseMontoSeguro(val) {
-        if (!val && val !== 0) return 0;
-        if (typeof val === 'number') return val;
-        let str = val.toString().trim().replace(/[^0-9.,-]/g, '');
-        if (str.includes('.') && str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
-        else if (str.includes(',')) str = str.replace(',', '.');
-        let num = parseFloat(str);
-        return isNaN(num) ? 0 : num;
-    }
-
-    function formatearQ(monto) {
-        return (parseFloat(monto) || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    window.onload = function() {
-        renderGridDias();
-        cargarEmpleadosDesdeSheets();
+    let estadoGlobal = {
+        hojaActual: "",
+        hojasTotales: [],
+        empleados: []
     };
 
-    function cargarEmpleadosDesdeSheets(nombreHoja = "") {
-        const status = document.getElementById('statusCarga');
-        if (status) {
-            status.innerText = "⏳ Conectando con Sheets...";
-            status.style.background = "#fef08a"; status.style.color = "#854d0e";
-        }
+    let estadosDiasTemp = Array(14).fill(true);
+    const nombresDiasSemana = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
+    const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
+    window.onload = function() {
+        cargarDatosDesdeSheet();
+    };
+
+    function switchTab(num) {
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === (num - 1));
+        });
+        document.querySelectorAll('.section').forEach((sec, idx) => {
+            sec.classList.toggle('active', idx === (num - 1));
+        });
+
+        if (num === 2) cargarEmpleadoAsistencia();
+        if (num === 3) cargarEmpleadoNomina();
+        if (num === 4) renderTablaConsolidada();
+    }
+
+    function cargarDatosDesdeSheet(hojaNombre = "") {
         const script = document.createElement('script');
-        const callbackName = 'procesarRespuestaGoogle_' + Date.now();
+        const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
         
-        window[callbackName] = function(respuesta) {
-            document.body.removeChild(script);
+        window[callbackName] = function(data) {
             delete window[callbackName];
+            document.body.removeChild(script);
 
-            hojaActual = respuesta.hojaActual;
-            actualizarTitulosHoja();
-            actualizarSelectorHojas(respuesta.hojasTotales, respuesta.hojaActual);
-
-            empleados = (respuesta.empleados || []).map((item, index) => {
-                const getVal = (keys) => {
-                    for (let k of keys) {
-                        let keyL = k.toLowerCase().replace(/\s+/g, '');
-                        if (item[keyL] !== undefined) return item[keyL];
+            if (data.status === "SUCCESS") {
+                estadoGlobal.hojaActual = data.hojaActual;
+                estadoGlobal.hojasTotales = data.hojasTotales;
+                
+                estadoGlobal.empleados = data.empleados.map(e => {
+                    let estados = [];
+                    for (let i = 1; i <= 14; i++) {
+                        let val = e['dia' + i];
+                        estados.push(val === true || val === "TRUE" || val === "true" || val === 1);
                     }
-                    return '';
-                };
+                    return {
+                        id: parseInt(e.id),
+                        nombre: e.nombre || "",
+                        dpi: e.dpi || "",
+                        fechaIngreso: e.fechaingreso || "",
+                        grupo: e.grupo || "",
+                        puesto: e.puesto || "",
+                        presupuesto: e.presupuesto || "",
+                        actividad: e.actividad || "",
+                        salario: parseFloat(e.salario || 0),
+                        bonificacion: parseFloat(e.bonificacion || 0),
+                        formaPago: e.formapago || "TRANSFERENCIA",
+                        cuenta: e.cuenta || "",
+                        codigoAcreditame: e.codigoacreditame || "",
+                        estadosDias: estados,
+                        diasAsistidos: parseInt(e.diasasistidos !== undefined ? e.diasasistidos : 14),
+                        diasNoTrabajados: e.diasnotrabajados || "",
+                        viaticoDiario: parseFloat(e.viaticodiario || 0),
+                        horasExtras: parseFloat(e.horasextras || 0),
+                        pagosPendientes: parseFloat(e.pagospendientes || 0),
+                        igss: parseFloat(e.igss || 0),
+                        prestamo: parseFloat(e.prestamo || 0)
+                    };
+                });
 
-                let idObtenido = parseInt(getVal(['id', 'no']));
-                if (!idObtenido || idObtenido > 999999) {
-                    idObtenido = index + 1;
-                }
-
-                let estadosDias = [];
-                for (let d = 1; d <= 14; d++) {
-                    let valDia = item['dia' + d];
-                    if (valDia === true || valDia === 'TRUE' || valDia === 'true') {
-                        estadosDias.push(true);
-                    } else if (valDia === false || valDia === 'FALSE' || valDia === 'false') {
-                        estadosDias.push(false);
-                    } else {
-                        estadosDias.push(true);
-                    }
-                }
-
-                return {
-                    id: idObtenido,
-                    nombre: getVal(['nombre', 'nombrecompleto']),
-                    dpi: getVal(['dpi']),
-                    fechaIngreso: getVal(['fechaingreso']),
-                    grupo: getVal(['grupo']),
-                    puesto: getVal(['puesto']),
-                    presupuesto: getVal(['presupuesto']),
-                    actividad: getVal(['actividad']),
-                    salario: parseMontoSeguro(getVal(['salario', 'sueldo', 'sueldobase'])) || 1950,
-                    bonificacion: parseMontoSeguro(getVal(['bonificacion'])),
-                    formaPago: getVal(['formapago']) || 'TRANSFERENCIA',
-                    cuenta: getVal(['cuenta', 'nocuenta']),
-                    codigoAcreditame: getVal(['codigoacredita', 'codigoacreditame', 'codacreditame']),
-                    estadosDias: estadosDias,
-                    diasAsistidos: parseMontoSeguro(getVal(['diasasistidos', 'dias', 'asistencia'])) || 14,
-                    viaticoDiario: parseMontoSeguro(getVal(['viatico', 'viaticodiario'])),
-                    horasExtras: parseMontoSeguro(getVal(['horasextras'])),
-                    pagosPendientes: parseMontoSeguro(getVal(['pendientes', 'pagospendientes'])),
-                    igss: parseMontoSeguro(getVal(['igss'])),
-                    prestamo: parseMontoSeguro(getVal(['prestamo', 'descuentos'])),
-                    diasNoTrabajados: getVal(['diasnotrabajados', 'faltas']) || ""
-                };
-            });
-            
-            renderTablaEmpleados();
-            renderTablaHojaUnica();
-
-            if (status) { 
-                if(empleados.length === 0) {
-                    status.innerText = "ℹ️ Pestaña vacía (" + hojaActual + ")";
-                    status.style.background = "#e0f2fe"; status.style.color = "#0369a1";
-                } else {
-                    status.innerText = "✅ Sincronizado (" + empleados.length + " empleados)"; 
-                    status.style.background = "#dcfce7"; status.style.color = "#15803d"; 
-                }
+                actualizarUI();
             }
         };
-        
-        script.onerror = function() {
-            if (status) { status.innerText = "⚠️ Error de conexión"; status.style.background = "#fee2e2"; status.style.color = "#991b1b"; }
-        };
-        
-        let url = URL_API + "?prefix=" + callbackName;
-        if (nombreHoja) url += "&hoja=" + encodeURIComponent(nombreHoja);
-        
+
+        let url = `${SCRIPT_URL}?prefix=${callbackName}`;
+        if (hojaNombre) url += `&hoja=${encodeURIComponent(hojaNombre)}`;
         script.src = url;
         document.body.appendChild(script);
     }
 
-    function actualizarSelectorHojas(listaHojas, hojaActiva) {
-        const select = document.getElementById('selectorHojas');
-        select.innerHTML = '';
-        listaHojas.forEach(h => {
-            select.innerHTML += `<option value="${h}" ${h === hojaActiva ? 'selected' : ''}>${h}</option>`;
+    function actualizarUI() {
+        const selectPestanas = document.getElementById('selectPestanaSheet');
+        selectPestanas.innerHTML = '';
+        estadoGlobal.hojasTotales.forEach(h => {
+            selectPestanas.innerHTML += `<option value="${h}" ${h === estadoGlobal.hojaActual ? 'selected' : ''}>${h}</option>`;
         });
-        select.innerHTML += `<option value="NUEVA">+ CREAR NUEVA PESTAÑA...</option>`;
-    }
 
-    function actualizarTitulosHoja() {
-        document.querySelectorAll('.lblNombreHojaActual').forEach(el => el.innerText = hojaActual);
-    }
-
-    function cambiarHojaSeleccionada() {
-        const select = document.getElementById('selectorHojas');
-        if (select.value === "NUEVA") {
-            const nueva = prompt("Nombre de la nueva pestaña (Ej: Planilla 20):");
-            if (nueva && nueva.trim() !== "") {
-                cargarEmpleadosDesdeSheets(nueva.trim());
-            } else {
-                select.value = hojaActual;
-            }
-        } else {
-            cargarEmpleadosDesdeSheets(select.value);
-        }
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        document.getElementById('btn-' + tabId).classList.add('active');
-
-        if (tabId === 'mod2') {
-            cargarEmpleadoAsistencia();
-            renderGridDias();
-        }
-        if (tabId === 'mod3') cargarEmpleadoNomina();
-        if (tabId === 'mod4') renderTablaHojaUnica();
+        renderTablaEmpleados();
+        poblarSelectsEmpleados();
     }
 
     function renderTablaEmpleados() {
-        const tbody = document.getElementById('tbodyEmpleados');
-        const selAsis = document.getElementById('selectEmpAsistencia');
-        const selNom = document.getElementById('selectEmpNomina');
-        tbody.innerHTML = ''; 
-        selAsis.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
-        selNom.innerHTML = '<option value="">-- Seleccione Empleado --</option>';
-
-        empleados.forEach(e => {
+        const tbody = document.querySelector('#tablaEmpleados tbody');
+        tbody.innerHTML = '';
+        estadoGlobal.empleados.forEach(emp => {
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${e.id}</strong></td><td><strong>${e.nombre}</strong></td>
-                    <td>${e.grupo || '-'}<br><small>${e.puesto || '-'}</small></td>
-                    <td>Q ${formatearQ(e.salario)}</td>
-                    <td>${e.cuenta || '-'}<br><small>Cod: ${e.codigoAcreditame || '-'}</small></td>
-                    <td><button class="btn-del-sm" onclick="eliminarEmpleado(${e.id})">🗑️ Eliminar</button></td>
-                </tr>`;
-            selAsis.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
-            selNom.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+                    <td>${emp.id}</td>
+                    <td>${emp.nombre}</td>
+                    <td>${emp.puesto}</td>
+                    <td>Q${emp.salario.toFixed(2)}</td>
+                    <td>
+                        <button onclick="editarEmpleado(${emp.id})">✏️ Editar</button>
+                        <button onclick="eliminarEmpleado(${emp.id})" style="color:red;">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `;
         });
     }
 
-    function agregarEmpleado() {
-        const nombre = document.getElementById('empNombre').value.trim();
-        if (!nombre) return alert("Escribe el nombre del empleado.");
+    function poblarSelectsEmpleados() {
+        const sel2 = document.getElementById('selectEmpAsistencia');
+        const sel3 = document.getElementById('selectEmpNomina');
+        sel2.innerHTML = '';
+        sel3.innerHTML = '';
 
-        const siguienteId = empleados.length > 0 ? Math.max(...empleados.map(e => parseInt(e.id) || 0)) + 1 : 1;
+        estadoGlobal.empleados.forEach(e => {
+            sel2.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            sel3.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+        });
+    }
 
-        const nuevo = {
-            id: siguienteId,
-            nombre: nombre,
+    function guardarEmpleado(e) {
+        e.preventDefault();
+        const id = document.getElementById('empId').value || Date.now();
+        const nuevoEmp = {
+            id: parseInt(id),
+            nombre: document.getElementById('empNombre').value,
             dpi: document.getElementById('empDpi').value,
             fechaIngreso: document.getElementById('empFechaIngreso').value,
             grupo: document.getElementById('empGrupo').value,
             puesto: document.getElementById('empPuesto').value,
             presupuesto: document.getElementById('empPresupuesto').value,
             actividad: document.getElementById('empActividad').value,
-            salario: parseMontoSeguro(document.getElementById('empSalario').value) || 1950,
+            salario: parseFloat(document.getElementById('empSalario').value),
+            bonificacion: parseFloat(document.getElementById('empBonificacion').value),
             formaPago: document.getElementById('empFormaPago').value,
-            cuenta: document.getElementById('empNumCuenta').value,
+            cuenta: document.getElementById('empCuenta').value,
             codigoAcreditame: document.getElementById('empCodigoAcreditame').value,
             estadosDias: Array(14).fill(true),
             diasAsistidos: 14,
-            diasNoTrabajados: ""
+            diasNoTrabajados: "",
+            viaticoDiario: 0,
+            horasExtras: 0,
+            pagosPendientes: 0,
+            igss: 0,
+            prestamo: 0
         };
 
-        fetch(URL_API, {
-            method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ accion: "guardarEmpleado", hoja: hojaActual, empleado: nuevo })
-        }).then(() => {
-            alert("✅ Empleado guardado con el ID #" + siguienteId);
-            cargarEmpleadosDesdeSheets(hojaActual);
-        });
-    }
-
-    function eliminarEmpleado(id) {
-        if (!confirm("¿Eliminar este empleado?")) return;
-        fetch(URL_API, {
-            method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ accion: "eliminarEmpleado", hoja: hojaActual, id: id })
-        }).then(() => {
-            cargarEmpleadosDesdeSheets(hojaActual);
+        enviarAccionBackend({ accion: "guardarEmpleado", hoja: estadoGlobal.hojaActual, empleado: nuevoEmp }, () => {
+            document.getElementById('formEmpleado').reset();
+            document.getElementById('empId').value = '';
+            cargarDatosDesdeSheet(estadoGlobal.hojaActual);
         });
     }
 
     function cargarEmpleadoAsistencia() {
-        const select = document.getElementById('selectEmpAsistencia');
-        const emp = empleados.find(e => e.id === parseInt(select.value));
-        
-        if (emp) {
-            document.getElementById('empViaticoDiario').value = emp.viaticoDiario || 0;
-            document.getElementById('cantHorasExtras').value = emp.horasExtras || 0;
-            estadosDiasTemp = emp.estadosDias ? [...emp.estadosDias] : Array(14).fill(true);
-        } else {
-            estadosDiasTemp = Array(14).fill(true);
-            document.getElementById('empViaticoDiario').value = "0.00";
-            document.getElementById('cantHorasExtras').value = "0";
-        }
+        const id = parseInt(document.getElementById('selectEmpAsistencia').value);
+        const emp = estadoGlobal.empleados.find(e => e.id === id);
+        if (!emp) return;
+
+        document.getElementById('empViaticoDiario').value = emp.viaticoDiario || 0;
+        document.getElementById('cantHorasExtras').value = emp.horasExtras || 0;
+        estadosDiasTemp = emp.estadosDias ? [...emp.estadosDias] : Array(14).fill(true);
 
         renderGridDias();
     }
 
-    // RENDERIZADO CON CALENDARIO Y FECHAS EXACTAS EN LOS 14 CUADRADOS
     function renderGridDias() {
         const grid = document.getElementById('gridDiasCatorcena');
         if (!grid) return;
@@ -500,10 +563,6 @@
 
         const strRango = `Del ${fechaInicio.getDate()} de ${mesesNombres[fechaInicio.getMonth()]} al ${fechaFin.getDate()} de ${mesesNombres[fechaFin.getMonth()]}`;
         document.getElementById('lblRangoFechasCatorcena').innerText = strRango;
-        if(document.getElementById('textoPeriodo')) {
-            document.getElementById('textoPeriodo').value = strRango;
-            actualizarTextoPeriodo();
-        }
 
         for (let i = 0; i < 14; i++) {
             let fechaActual = new Date(fechaInicio);
@@ -536,190 +595,108 @@
     }
 
     function toggleDia(index) {
-        const select = document.getElementById('selectEmpAsistencia');
-        if (!select.value) {
-            alert("⚠️ Selecciona primero a un empleado en el menú desplegable.");
-            return;
-        }
         estadosDiasTemp[index] = !estadosDiasTemp[index];
         renderGridDias();
     }
 
     function guardarAsistencia() {
-        const select = document.getElementById('selectEmpAsistencia');
-        if (!select.value) {
-            alert("⚠️ Selecciona un empleado antes de guardar.");
-            return;
-        }
-        
-        const emp = empleados.find(e => e.id === parseInt(select.value));
-        if (emp) {
-            const fechaInput = document.getElementById('inputFechaInicioCatorcena').value;
-            let fechaInicio = fechaInput ? new Date(fechaInput + 'T00:00:00') : new Date();
+        const id = parseInt(document.getElementById('selectEmpAsistencia').value);
+        let emp = estadoGlobal.empleados.find(e => e.id === id);
+        if (!emp) return;
 
-            let asistidos = 0;
-            let faltas = [];
-            
-            for (let i = 0; i < 14; i++) {
-                if (estadosDiasTemp[i]) {
-                    asistidos++;
-                } else {
-                    let fechaActual = new Date(fechaInicio);
-                    fechaActual.setDate(fechaInicio.getDate() + i);
-                    const nombreSemana = nombresDiasSemana[fechaActual.getDay()];
-                    const diaNum = fechaActual.getDate().toString().padStart(2, '0');
-                    const mesNum = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
-                    faltas.push(`${nombreSemana} ${diaNum}/${mesNum}`);
-                }
+        let asistidos = 0;
+        let faltas = [];
+        const fechaInput = document.getElementById('inputFechaInicioCatorcena').value;
+        let fechaInicio = fechaInput ? new Date(fechaInput + 'T00:00:00') : new Date();
+
+        for (let i = 0; i < 14; i++) {
+            if (estadosDiasTemp[i]) {
+                asistidos++;
+            } else {
+                let fechaActual = new Date(fechaInicio);
+                fechaActual.setDate(fechaInicio.getDate() + i);
+                const diaNum = fechaActual.getDate().toString().padStart(2, '0');
+                const mesNum = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
+                faltas.push(`${nombresDiasSemana[fechaActual.getDay()]} ${diaNum}/${mesNum}`);
             }
-
-            emp.estadosDias = [...estadosDiasTemp];
-            emp.diasAsistidos = asistidos;
-            emp.diasNoTrabajados = faltas.join(', ');
-            emp.viaticoDiario = parseMontoSeguro(document.getElementById('empViaticoDiario').value);
-            emp.horasExtras = parseMontoSeguro(document.getElementById('cantHorasExtras').value);
-
-            fetch(URL_API, {
-                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ accion: "guardarEmpleado", hoja: hojaActual, empleado: emp })
-            }).then(() => {
-                renderTablaHojaUnica();
-                alert(`✅ Asistencia guardada para ${emp.nombre}.`);
-            });
         }
+
+        emp.estadosDias = [...estadosDiasTemp];
+        emp.diasAsistidos = asistidos;
+        emp.diasNoTrabajados = faltas.length > 0 ? faltas.join(', ') : '';
+        emp.viaticoDiario = parseFloat(document.getElementById('empViaticoDiario').value || 0);
+        emp.horasExtras = parseFloat(document.getElementById('cantHorasExtras').value || 0);
+
+        enviarAccionBackend({ accion: "guardarEmpleado", hoja: estadoGlobal.hojaActual, empleado: emp }, () => {
+            alert('¡Asistencia guardada correctamente!');
+            cargarDatosDesdeSheet(estadoGlobal.hojaActual);
+        });
     }
 
     function cargarEmpleadoNomina() {
-        const select = document.getElementById('selectEmpNomina');
-        const emp = empleados.find(e => e.id === parseInt(select.value));
-        if (emp) {
-            document.getElementById('inputBonificacion').value = emp.bonificacion || 0;
-            document.getElementById('inputIgss').value = emp.igss || 0;
-            document.getElementById('inputPendientes').value = emp.pagosPendientes || 0;
-            document.getElementById('inputPrestamo').value = emp.prestamo || 0;
-            calcularNominaActual();
-        }
-    }
-
-    function calcularNominaActual() {
-        const select = document.getElementById('selectEmpNomina');
-        const emp = empleados.find(e => e.id === parseInt(select.value));
+        const id = parseInt(document.getElementById('selectEmpNomina').value);
+        const emp = estadoGlobal.empleados.find(e => e.id === id);
         if (!emp) return;
 
-        emp.bonificacion = parseMontoSeguro(document.getElementById('inputBonificacion').value);
-        emp.igss = parseMontoSeguro(document.getElementById('inputIgss').value);
-        emp.pagosPendientes = parseMontoSeguro(document.getElementById('inputPendientes').value);
-        emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
-
-        const pagoDiario = emp.salario / 14;
-        const diasAsist = emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14;
-        const sueldoProporcional = pagoDiario * diasAsist;
-        const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
-        const totViaticos = (emp.viaticoDiario || 0) * diasAsist;
-        
-        const neto = (sueldoProporcional + emp.bonificacion + pagoExtras + totViaticos + emp.pagosPendientes) - (emp.igss + emp.prestamo);
-
-        document.getElementById('lblDias').innerText = diasAsist;
-        document.getElementById('lblSalarioDiario').innerText = formatearQ(pagoDiario);
-        document.getElementById('lblBaseProporcional').innerText = formatearQ(sueldoProporcional);
-        document.getElementById('lblBonificacion').innerText = formatearQ(emp.bonificacion);
-        document.getElementById('lblPagoExtras').innerText = formatearQ(pagoExtras);
-        document.getElementById('lblViaticos').innerText = formatearQ(totViaticos);
-        document.getElementById('lblPendientes').innerText = formatearQ(emp.pagosPendientes);
-        document.getElementById('lblDescuentoIgss').innerText = formatearQ(emp.igss);
-        document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
-        document.getElementById('lblNetoPagar').innerText = formatearQ(neto);
+        document.getElementById('nomPagosPendientes').value = emp.pagosPendientes || 0;
+        document.getElementById('nomIgss').value = emp.igss || 0;
+        document.getElementById('nomPrestamo').value = emp.prestamo || 0;
     }
 
-    function guardarNominaEmpleado() {
-        const select = document.getElementById('selectEmpNomina');
-        const emp = empleados.find(e => e.id === parseInt(select.value));
-        if (!emp) return alert("⚠️ Selecciona un empleado.");
+    function guardarAjustesNomina() {
+        const id = parseInt(document.getElementById('selectEmpNomina').value);
+        let emp = estadoGlobal.empleados.find(e => e.id === id);
+        if (!emp) return;
 
-        fetch(URL_API, {
-            method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ accion: "guardarEmpleado", hoja: hojaActual, empleado: emp })
-        }).then(() => {
-            renderTablaHojaUnica();
-            alert(`✅ Datos de nómina guardados para ${emp.nombre}.`);
+        emp.pagosPendientes = parseFloat(document.getElementById('nomPagosPendientes').value || 0);
+        emp.igss = parseFloat(document.getElementById('nomIgss').value || 0);
+        emp.prestamo = parseFloat(document.getElementById('nomPrestamo').value || 0);
+
+        enviarAccionBackend({ accion: "guardarEmpleado", hoja: estadoGlobal.hojaActual, empleado: emp }, () => {
+            alert('¡Ajustes de nómina guardados!');
+            cargarDatosDesdeSheet(estadoGlobal.hojaActual);
         });
     }
 
-    function actualizarTextoPeriodo() {
-        const val = document.getElementById('textoPeriodo').value;
-        document.getElementById('lblRangoGeneral').innerText = val;
-    }
-
-    function renderTablaHojaUnica() {
-        const tbody = document.getElementById('tbodyPlanillaHojaUnica');
-        if (!tbody) return;
+    function renderTablaConsolidada() {
+        const tbody = document.querySelector('#tablaConsolidada tbody');
         tbody.innerHTML = '';
 
-        let totalSueldo = 0, totalBonif = 0, totalExtras = 0, totalViaticos = 0;
-        let totalPendientes = 0, totalIgss = 0, totalPrestamos = 0, totalNeto = 0;
-
-        empleados.forEach(e => {
-            const pagoDiario = e.salario / 14;
-            const diasAsist = e.diasAsistidos !== undefined ? e.diasAsistidos : 14;
-            const sueldoProporcional = pagoDiario * diasAsist;
-            const pagoExtras = (e.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
-            const totViaticos = (e.viaticoDiario || 0) * diasAsist;
-            const faltasCant = 14 - diasAsist;
-            
-            const neto = (sueldoProporcional + (e.bonificacion || 0) + pagoExtras + totViaticos + (e.pagosPendientes || 0)) - ((e.igss || 0) + (e.prestamo || 0));
-
-            totalSueldo += sueldoProporcional;
-            totalBonif += (e.bonificacion || 0);
-            totalExtras += pagoExtras;
-            totalViaticos += totViaticos;
-            totalPendientes += (e.pagosPendientes || 0);
-            totalIgss += (e.igss || 0);
-            totalPrestamos += (e.prestamo || 0);
-            totalNeto += neto;
+        estadoGlobal.empleados.forEach(emp => {
+            const salarioDiario = emp.salario / 14;
+            const salarioDevengado = salarioDiario * emp.diasAsistidos;
+            const viaticosTotal = emp.viaticoDiario * emp.diasAsistidos;
+            const pagoHorasExtras = (salarioDiario / 8) * 1.5 * emp.horasExtras;
+            const subtotal = salarioDevengado + emp.bonificacion + viaticosTotal + pagoHorasExtras + emp.pagosPendientes;
+            const liquido = subtotal - emp.igss - emp.prestamo;
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${e.id}</td>
-                    <td class="text-left"><strong>${e.nombre}</strong></td>
-                    <td>${e.dpi || '-'}</td>
-                    <td class="text-left">${e.puesto || '-'}</td>
-                    <td>${diasAsist}</td>
-                    <td>${faltasCant}</td>
-                    <td class="text-right">Q${formatearQ(sueldoProporcional)}</td>
-                    <td class="text-right">Q${formatearQ(e.bonificacion)}</td>
-                    <td class="text-right">Q${formatearQ(pagoExtras)}</td>
-                    <td class="text-right">Q${formatearQ(totViaticos)}</td>
-                    <td class="text-right">Q${formatearQ(e.pagosPendientes)}</td>
-                    <td class="text-right">Q${formatearQ(e.igss)}</td>
-                    <td class="text-right">Q${formatearQ(e.prestamo)}</td>
-                    <td class="text-right"><strong>Q${formatearQ(neto)}</strong></td>
-                </tr>`;
+                    <td>${emp.id}</td>
+                    <td>${emp.nombre}</td>
+                    <td class="text-center">${emp.diasAsistidos}/14</td>
+                    <td class="text-right">Q${salarioDevengado.toFixed(2)}</td>
+                    <td class="text-right">Q${emp.bonificacion.toFixed(2)}</td>
+                    <td class="text-right">Q${viaticosTotal.toFixed(2)}</td>
+                    <td class="text-right">Q${pagoHorasExtras.toFixed(2)}</td>
+                    <td class="text-right"><strong>Q${subtotal.toFixed(2)}</strong></td>
+                    <td class="text-right text-danger">Q${emp.igss.toFixed(2)}</td>
+                    <td class="text-right text-danger">Q${emp.prestamo.toFixed(2)}</td>
+                    <td class="text-right text-success"><strong>Q${liquido.toFixed(2)}</strong></td>
+                </tr>
+            `;
         });
-
-        tbody.innerHTML += `
-            <tr style="font-weight: bold; background-color: #f1f5f9;">
-                <td colspan="6" class="text-right">TOTALES GENERALES:</td>
-                <td class="text-right">Q${formatearQ(totalSueldo)}</td>
-                <td class="text-right">Q${formatearQ(totalBonif)}</td>
-                <td class="text-right">Q${formatearQ(totalExtras)}</td>
-                <td class="text-right">Q${formatearQ(totalViaticos)}</td>
-                <td class="text-right">Q${formatearQ(totalPendientes)}</td>
-                <td class="text-right">Q${formatearQ(totalIgss)}</td>
-                <td class="text-right">Q${formatearQ(totalPrestamos)}</td>
-                <td class="text-right" style="color: #15803d;">Q${formatearQ(totalNeto)}</td>
-            </tr>`;
     }
 
-    function descargarPlanillaGeneralUnaHoja() {
-        const elemento = document.getElementById('areaPlanillaHojaUnica');
-        const opt = {
-            margin:       [5, 5, 5, 5],
-            filename:     `Planilla_${hojaActual || 'Consolidada'}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
-        };
-        html2pdf().set(opt).from(elemento).save();
+    function enviarAccionBackend(payload, callback) {
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(() => {
+            if (callback) callback();
+        }).catch(err => console.error('Error al guardar:', err));
     }
 </script>
 </body>
