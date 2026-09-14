@@ -31,13 +31,20 @@
         .resumen-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         .loading-badge { background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; display: inline-block; font-weight: bold; }
         .text-danger { color: #dc2626; }
+        
+        /* Módulo de Asistencia / Calendario */
         .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 15px; }
+        @media (max-width: 768px) {
+            .grid-dias { grid-template-columns: repeat(2, 1fr); }
+        }
         .dia-box { padding: 10px 4px; border-radius: 6px; text-align: center; cursor: pointer; font-weight: bold; font-size: 0.85rem; user-select: none; border: 2px solid #cbd5e1; transition: all 0.2s; }
         .dia-box.asistio { background-color: #dcfce7; color: #166534; border-color: #86efac; }
         .dia-box.falto { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-        .dia-nombre { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 2px; }
+        .dia-nombre { font-size: 0.75rem; text-transform: uppercase; color: #475569; margin-bottom: 2px; }
         .dia-box.asistio .dia-nombre { color: #15803d; }
         .dia-box.falto .dia-nombre { color: #b91c1c; }
+
+        /* Reporte PDF */
         .reporte-hoja-unica { background: #ffffff; padding: 10px; font-family: Arial, sans-serif; width: 100%; box-sizing: border-box; }
         .reporte-hoja-unica h2 { text-align: center; margin: 0 0 5px 0; font-size: 1.1rem; border: none; }
         .reporte-hoja-unica h3 { text-align: center; margin: 0 0 5px 0; font-size: 0.95rem; border: none; color: #2563eb; }
@@ -121,7 +128,8 @@
                 <select id="selectEmpAsistencia" onchange="cargarEmpleadoAsistencia()"></select>
             </div>
             <div class="form-group">
-                <label>Fecha Inicio de Catorcena:</label>
+                <label>📅 Fecha Inicial de la Catorcena:</label>
+                <!-- Calendario interactivo -->
                 <input type="date" id="inputFechaInicioCatorcena" value="2026-08-31" onchange="renderGridDias()">
             </div>
             <div class="form-group">
@@ -136,7 +144,7 @@
 
         <div class="resumen-card">
             <h3>Marcar Días Trabajos / Faltas (Sincronizado con Checkboxes en Sheets)</h3>
-            <p style="font-weight: bold; color: #1e293b; font-size: 1rem; margin-top: -5px;">
+            <p style="font-weight: bold; color: #1e293b; font-size: 1.05rem; margin-top: -5px;">
                 📅 Período: <span id="lblRangoFechasCatorcena" style="color: #2563eb;">Del 31 de Agosto al 13 de Septiembre</span>
             </p>
             <p>
@@ -144,6 +152,7 @@
                 <strong>Días No Trabajados (Faltas):</strong> <span id="lblFaltasContador" style="color: #dc2626; font-weight: bold; font-size: 1.1rem;">0</span>
             </p>
             
+            <!-- Grid dinámico de 14 días con fechas exactas -->
             <div id="gridDiasCatorcena" class="grid-dias"></div>
             
             <p style="margin-top: 15px; font-size: 0.95rem;">
@@ -195,6 +204,7 @@
             <hr>
             <p style="font-size: 1.2rem; color: #16a34a;"><strong>TOTAL LÍQUIDO A RECIBIR: Q <span id="lblNetoPagar">0.00</span></strong></p>
         </div>
+        <button class="btn-main" onclick="guardarNominaEmpleado()">💾 Guardar Cálculo de Nómina</button>
     </div>
 
     <!-- MÓDULO 4 -->
@@ -228,8 +238,9 @@
     </div>
 </div>
 
-<script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwwMvh_WrEKbJqwT83CyaOrMSHPYN2RIdhWknVcwndXTjSoQxuvRqI7BiyGEVvrAE_bBQ/exec";
+<script>   
+ const URL_API = "https://script.google.com/macros/s/AKfycbx-9drbzQA8ZjXphxwZEiCtaooeU2FkYWwXuTEAnaIJYDUHpKE7iouQOHhimBwK7LmLGA/exec";
+    
     let empleados = [];
     let hojaActual = "";
     let estadosDiasTemp = Array(14).fill(true);
@@ -282,13 +293,11 @@
                     return '';
                 };
 
-                // Si el ID es largo o no existe, le asigna el índice consecutivo (1, 2, 3...)
                 let idObtenido = parseInt(getVal(['id', 'no']));
                 if (!idObtenido || idObtenido > 999999) {
                     idObtenido = index + 1;
                 }
 
-                // Checkboxes Día 1 al 14
                 let estadosDias = [];
                 for (let d = 1; d <= 14; d++) {
                     let valDia = item['dia' + d];
@@ -474,6 +483,7 @@
         renderGridDias();
     }
 
+    // RENDERIZADO CON CALENDARIO Y FECHAS EXACTAS EN LOS 14 CUADRADOS
     function renderGridDias() {
         const grid = document.getElementById('gridDiasCatorcena');
         if (!grid) return;
@@ -514,9 +524,9 @@
             grid.innerHTML += `
                 <div class="dia-box ${esAsistio ? 'asistio' : 'falto'}" onclick="toggleDia(${i})">
                     <div class="dia-nombre">${nombreSemana}</div>
-                    <strong>${fechaCorta}</strong><br>
-                    <small>Día ${i + 1}</small><br>
-                    <span>${esAsistio ? '✓ Asistió' : '✗ Faltó'}</span>
+                    <strong style="font-size: 1rem; color: #0f172a;">${fechaCorta}</strong><br>
+                    <small style="font-size: 0.72rem; color: #64748b;">Día ${i + 1}</small><br>
+                    <span style="font-size: 0.8rem; margin-top: 3px; display: inline-block;">${esAsistio ? '✓ Asistió' : '✗ Faltó'}</span>
                 </div>`;
         }
 
@@ -602,12 +612,14 @@
         emp.prestamo = parseMontoSeguro(document.getElementById('inputPrestamo').value);
 
         const pagoDiario = emp.salario / 14;
-        const sueldoProporcional = pagoDiario * (emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14);
+        const diasAsist = emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14;
+        const sueldoProporcional = pagoDiario * diasAsist;
         const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
-        const totViaticos = (emp.viaticoDiario || 0) * (emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14);
-        const neto = (sueldoProporcional + emp.bonificacion + pagoExtras + totViaticos + emp.pagosPendientes) - (emp.prestamo + emp.igss);
+        const totViaticos = (emp.viaticoDiario || 0) * diasAsist;
+        
+        const neto = (sueldoProporcional + emp.bonificacion + pagoExtras + totViaticos + emp.pagosPendientes) - (emp.igss + emp.prestamo);
 
-        document.getElementById('lblDias').innerText = emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14;
+        document.getElementById('lblDias').innerText = diasAsist;
         document.getElementById('lblSalarioDiario').innerText = formatearQ(pagoDiario);
         document.getElementById('lblBaseProporcional').innerText = formatearQ(sueldoProporcional);
         document.getElementById('lblBonificacion').innerText = formatearQ(emp.bonificacion);
@@ -616,74 +628,98 @@
         document.getElementById('lblPendientes').innerText = formatearQ(emp.pagosPendientes);
         document.getElementById('lblDescuentoIgss').innerText = formatearQ(emp.igss);
         document.getElementById('lblDescuentoPrestamo').innerText = formatearQ(emp.prestamo);
-        document.getElementById('lblNetoPagar').innerText = formatearQ(neto > 0 ? neto : 0);
+        document.getElementById('lblNetoPagar').innerText = formatearQ(neto);
+    }
 
-        renderTablaHojaUnica();
+    function guardarNominaEmpleado() {
+        const select = document.getElementById('selectEmpNomina');
+        const emp = empleados.find(e => e.id === parseInt(select.value));
+        if (!emp) return alert("⚠️ Selecciona un empleado.");
+
+        fetch(URL_API, {
+            method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accion: "guardarEmpleado", hoja: hojaActual, empleado: emp })
+        }).then(() => {
+            renderTablaHojaUnica();
+            alert(`✅ Datos de nómina guardados para ${emp.nombre}.`);
+        });
     }
 
     function actualizarTextoPeriodo() {
-        document.getElementById('lblRangoGeneral').innerText = document.getElementById('textoPeriodo').value;
+        const val = document.getElementById('textoPeriodo').value;
+        document.getElementById('lblRangoGeneral').innerText = val;
     }
 
     function renderTablaHojaUnica() {
         const tbody = document.getElementById('tbodyPlanillaHojaUnica');
         if (!tbody) return;
         tbody.innerHTML = '';
-        let totSueldos = 0, totBonif = 0, totExtras = 0, totViat = 0, totPend = 0, totIgss = 0, totPrest = 0, totNeto = 0;
 
-        empleados.forEach(emp => {
-            const pagoDiario = emp.salario / 14;
-            const diasAsist = emp.diasAsistidos !== undefined ? emp.diasAsistidos : 14;
+        let totalSueldo = 0, totalBonif = 0, totalExtras = 0, totalViaticos = 0;
+        let totalPendientes = 0, totalIgss = 0, totalPrestamos = 0, totalNeto = 0;
+
+        empleados.forEach(e => {
+            const pagoDiario = e.salario / 14;
+            const diasAsist = e.diasAsistidos !== undefined ? e.diasAsistidos : 14;
             const sueldoProporcional = pagoDiario * diasAsist;
-            const pagoExtras = (emp.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
-            const totViaticos = (emp.viaticoDiario || 0) * diasAsist;
-            const neto = (sueldoProporcional + (emp.bonificacion||0) + pagoExtras + totViaticos + (emp.pagosPendientes||0)) - ((emp.prestamo||0) + (emp.igss||0));
+            const pagoExtras = (e.horasExtras || 0) * ((pagoDiario / 8) * 1.5);
+            const totViaticos = (e.viaticoDiario || 0) * diasAsist;
+            const faltasCant = 14 - diasAsist;
+            
+            const neto = (sueldoProporcional + (e.bonificacion || 0) + pagoExtras + totViaticos + (e.pagosPendientes || 0)) - ((e.igss || 0) + (e.prestamo || 0));
 
-            totSueldos += sueldoProporcional; totBonif += (emp.bonificacion||0); totExtras += pagoExtras; totViat += totViaticos;
-            totPend += (emp.pagosPendientes||0); totIgss += (emp.igss||0); totPrest += (emp.prestamo||0); totNeto += (neto > 0 ? neto : 0);
+            totalSueldo += sueldoProporcional;
+            totalBonif += (e.bonificacion || 0);
+            totalExtras += pagoExtras;
+            totalViaticos += totViaticos;
+            totalPendientes += (e.pagosPendientes || 0);
+            totalIgss += (e.igss || 0);
+            totalPrestamos += (e.prestamo || 0);
+            totalNeto += neto;
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${emp.id}</td>
-                    <td class="text-left"><strong>${emp.nombre}</strong></td>
-                    <td>${emp.dpi || '-'}</td>
-                    <td class="text-left">${emp.puesto || '-'}</td>
-                    <td><strong>${diasAsist}</strong></td>
-                    <td class="text-danger"><small>${emp.diasNoTrabajados || 'Ninguno'}</small></td>
+                    <td>${e.id}</td>
+                    <td class="text-left"><strong>${e.nombre}</strong></td>
+                    <td>${e.dpi || '-'}</td>
+                    <td class="text-left">${e.puesto || '-'}</td>
+                    <td>${diasAsist}</td>
+                    <td>${faltasCant}</td>
                     <td class="text-right">Q${formatearQ(sueldoProporcional)}</td>
-                    <td class="text-right">Q${formatearQ(emp.bonificacion)}</td>
+                    <td class="text-right">Q${formatearQ(e.bonificacion)}</td>
                     <td class="text-right">Q${formatearQ(pagoExtras)}</td>
                     <td class="text-right">Q${formatearQ(totViaticos)}</td>
-                    <td class="text-right">Q${formatearQ(emp.pagosPendientes)}</td>
-                    <td class="text-right text-danger">Q${formatearQ(emp.igss)}</td>
-                    <td class="text-right text-danger">Q${formatearQ(emp.prestamo)}</td>
-                    <td class="text-right"><strong>Q${formatearQ(neto > 0 ? neto : 0)}</strong></td>
+                    <td class="text-right">Q${formatearQ(e.pagosPendientes)}</td>
+                    <td class="text-right">Q${formatearQ(e.igss)}</td>
+                    <td class="text-right">Q${formatearQ(e.prestamo)}</td>
+                    <td class="text-right"><strong>Q${formatearQ(neto)}</strong></td>
                 </tr>`;
         });
 
         tbody.innerHTML += `
-            <tr style="background:#f1f5f9; font-weight:bold;">
-                <td colspan="6" class="text-right">TOTALES:</td>
-                <td class="text-right">Q${formatearQ(totSueldos)}</td>
-                <td class="text-right">Q${formatearQ(totBonif)}</td>
-                <td class="text-right">Q${formatearQ(totExtras)}</td>
-                <td class="text-right">Q${formatearQ(totViat)}</td>
-                <td class="text-right">Q${formatearQ(totPend)}</td>
-                <td class="text-right text-danger">Q${formatearQ(totIgss)}</td>
-                <td class="text-right text-danger">Q${formatearQ(totPrest)}</td>
-                <td class="text-right">Q${formatearQ(totNeto)}</td>
+            <tr style="font-weight: bold; background-color: #f1f5f9;">
+                <td colspan="6" class="text-right">TOTALES GENERALES:</td>
+                <td class="text-right">Q${formatearQ(totalSueldo)}</td>
+                <td class="text-right">Q${formatearQ(totalBonif)}</td>
+                <td class="text-right">Q${formatearQ(totalExtras)}</td>
+                <td class="text-right">Q${formatearQ(totalViaticos)}</td>
+                <td class="text-right">Q${formatearQ(totalPendientes)}</td>
+                <td class="text-right">Q${formatearQ(totalIgss)}</td>
+                <td class="text-right">Q${formatearQ(totalPrestamos)}</td>
+                <td class="text-right" style="color: #15803d;">Q${formatearQ(totalNeto)}</td>
             </tr>`;
     }
 
     function descargarPlanillaGeneralUnaHoja() {
-        if (empleados.length === 0) return alert("No hay empleados en esta pestaña.");
-        const element = document.getElementById('areaPlanillaHojaUnica');
+        const elemento = document.getElementById('areaPlanillaHojaUnica');
         const opt = {
-            margin: [4, 4, 4, 4], filename: `Reporte_${hojaActual}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' }
+            margin:       [5, 5, 5, 5],
+            filename:     `Planilla_${hojaActual || 'Consolidada'}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
         };
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set(opt).from(elemento).save();
     }
 </script>
 </body>
